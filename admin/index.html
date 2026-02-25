@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración | Botines FV</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../admin/admin.css">
+  <link rel="icon" type="image/jpeg" href="../images/logo.jpeg">
+</head>
+<body>
+
+  <div class="admin-login" id="loginScreen">
+    <div class="login-card">
+      <img src="../images/logo.jpeg" alt="Botines FV" class="login-logo">
+      <h1>Administración</h1>
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="loginEmail">Usuario</label>
+          <input type="text" id="loginEmail" required placeholder="Usuario">
+        </div>
+        <div class="login-field">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="login-btn">Ingresar</button>
+        <p class="login-error" id="loginError"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="admin-app" id="adminApp" style="display:none">
+    <button class="admin-hamburger" id="adminHamburger" type="button" aria-label="Menú">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="admin-sidebar-backdrop" id="adminSidebarBackdrop"></div>
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="admin-sidebar-logo">
+        <img src="../images/logo.jpeg" alt="Botines FV">
+        <span>Admin Panel</span>
+      </div>
+      <nav class="admin-nav">
+        <button class="admin-nav-btn active" data-section="products">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Productos
+        </button>
+        <button class="admin-nav-btn" data-section="orders">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Órdenes
+        </button>
+      </nav>
+      <button class="admin-logout" id="logoutBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </button>
+    </aside>
+
+    <main class="admin-main">
+      <section class="admin-section active" id="sectionProducts">
+        <div class="admin-section-header">
+          <h2>Productos</h2>
+          <button class="admin-btn-primary" id="btnNewProduct">+ Nuevo producto</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Tipo</th>
+                <th class="precio">Precio</th>
+                <th>Destacado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-section" id="sectionOrders">
+        <div class="admin-section-header">
+          <h2>Órdenes</h2>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="ordersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Email</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="admin-modal-backdrop" id="modalBackdrop" style="display:none"></div>
+      <div class="admin-modal" id="productModal" style="display:none">
+        <div class="admin-modal-header">
+          <h3 id="modalTitle">Nuevo producto</h3>
+          <button class="admin-modal-close" id="modalClose">&times;</button>
+        </div>
+        <form id="productForm" class="admin-modal-body">
+          <input type="hidden" id="productId">
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="pName">Nombre (opcional)</label>
+              <input type="text" id="pName">
+            </div>
+            <div class="admin-form-group">
+              <label for="pBrand">Marca</label>
+              <select id="pBrand" required>
+                <option value="">Seleccionar</option>
+                <option value="Nike">Nike</option>
+                <option value="Adidas">Adidas</option>
+                <option value="Puma">Puma</option>
+                <option value="Mizuno">Mizuno</option>
+                <option value="Joma">Joma</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="pType">Tipo</label>
+              <select id="pType" required>
+                <option value="">Seleccionar</option>
+                <option value="f11">Fútbol 11</option>
+                <option value="f5">Fútbol 5 / Futsal</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label for="pCategory">Categoría</label>
+              <select id="pCategory" required>
+                <option value="">Seleccionar</option>
+                <option value="adultos">Adultos</option>
+                <option value="kids">Kids</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="pPrice">Precio</label>
+              <input type="number" id="pPrice" required min="0" step="1000">
+            </div>
+            <div class="admin-form-group">
+              <label>
+                <input type="checkbox" id="pFeatured" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;accent-color:#c9a84c">
+                Marcar como destacado
+              </label>
+            </div>
+          </div>
+          <div class="admin-form-group">
+            <label for="pDescription">Descripción (opcional)</label>
+            <textarea id="pDescription" rows="3"></textarea>
+          </div>
+          <div class="admin-form-group">
+            <label>Talles disponibles</label>
+            <div class="admin-sizes-grid" id="sizesGrid"></div>
+          </div>
+          <div class="admin-form-group">
+            <label for="pImages">Imágenes del producto</label>
+            <input type="file" id="pImages" accept="image/*" multiple>
+            <div class="admin-image-preview" id="imagePreview"></div>
+            <div class="admin-existing-images" id="existingImages"></div>
+          </div>
+          <div class="admin-form-actions">
+            <button type="button" class="admin-btn-secondary" id="modalCancel">Cancelar</button>
+            <button type="submit" class="admin-btn-primary">Guardar producto</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-modal" id="orderDetailModal" style="display:none">
+        <div class="admin-modal-header">
+          <h3>Detalle de orden</h3>
+          <button class="admin-modal-close" id="orderModalClose">&times;</button>
+        </div>
+        <div class="admin-modal-body" id="orderDetailBody"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../admin/admin.js"></script>
+  <script>
+    // Admin sidebar mobile toggle
+    (function() {
+      const btn = document.getElementById('adminHamburger');
+      const sidebar = document.getElementById('adminSidebar');
+      const backdrop = document.getElementById('adminSidebarBackdrop');
+      if (!btn || !sidebar) return;
+      function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('open');
+      }
+      btn.addEventListener('click', toggleSidebar);
+      backdrop.addEventListener('click', toggleSidebar);
+      sidebar.querySelectorAll('.admin-nav-btn, .admin-logout').forEach(function(el) {
+        el.addEventListener('click', function() {
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('open');
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

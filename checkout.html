@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finalizar Compra | Botines FV</title>
+  <meta name="description" content="Completá tus datos y finalizá tu compra de botines de fútbol premium.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-logo">
+        <a href="index.html">
+          <img src="images/logo.jpeg" alt="Botines FV" width="54" height="54">
+        </a>
+      </div>
+      <div class="header-center">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Buscar botines..." aria-label="Buscar productos">
+          <button type="button" id="searchBtn" aria-label="Buscar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+        </div>
+        <div class="nav-products" id="navProducts">
+          <button type="button">
+            Productos
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-dropdown">
+            <h4>Marcas</h4>
+            <ul>
+              <li><a href="category.html?marca=nike">Nike</a></li>
+              <li><a href="category.html?marca=adidas">Adidas</a></li>
+              <li><a href="category.html?marca=puma">Puma</a></li>
+              <li><a href="category.html?marca=mizuno">Mizuno</a></li>
+              <li><a href="category.html?marca=joma">Joma</a></li>
+            </ul>
+            <h4>Categorías</h4>
+            <ul>
+              <li><a href="category.html?categoria=adultos">Adultos</a></li>
+              <li><a href="category.html?categoria=kids">Kids</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+      <div class="header-right">
+        <button class="cart-btn" id="cartBtn" type="button" aria-label="Ver carrito">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Menú">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="mobile-menu" id="mobileMenu">
+    <div class="search-box" style="margin-bottom:20px">
+      <input type="text" id="mobileSearchInput" placeholder="Buscar botines..." aria-label="Buscar productos">
+      <button type="button" id="mobileSearchBtn" aria-label="Buscar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+    <h4>Marcas</h4>
+    <a href="category.html?marca=nike">Nike</a>
+    <a href="category.html?marca=adidas">Adidas</a>
+    <a href="category.html?marca=puma">Puma</a>
+    <a href="category.html?marca=mizuno">Mizuno</a>
+    <a href="category.html?marca=joma">Joma</a>
+    <h4>Categorías</h4>
+    <a href="category.html?categoria=adultos">Adultos</a>
+    <a href="category.html?categoria=kids">Kids</a>
+  </nav>
+  <div class="mobile-menu-backdrop" id="mobileBackdrop"></div>
+
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="index.html">Inicio</a>
+      <span>/</span>
+      <span>Finalizar compra</span>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="checkout-page">
+      <div class="checkout-layout">
+        <div class="checkout-form-section reveal-left">
+          <h2>Datos de envío</h2>
+          <form id="checkoutForm" autocomplete="on">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="chkNombre">Nombre</label>
+                <input type="text" id="chkNombre" name="nombre" required autocomplete="given-name">
+              </div>
+              <div class="form-group">
+                <label for="chkApellido">Apellido</label>
+                <input type="text" id="chkApellido" name="apellido" required autocomplete="family-name">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="chkEmail">Email</label>
+                <input type="email" id="chkEmail" name="email" required autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label for="chkTelefono">Teléfono</label>
+                <input type="tel" id="chkTelefono" name="telefono" required autocomplete="tel">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full">
+                <label for="chkDireccion">Dirección</label>
+                <input type="text" id="chkDireccion" name="direccion" required autocomplete="street-address">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group full">
+                <label for="chkMensaje">Mensaje (opcional)</label>
+                <textarea id="chkMensaje" name="mensaje" rows="3"></textarea>
+              </div>
+            </div>
+
+            <label class="billing-toggle">
+              <input type="checkbox" id="billingToggle">
+              Datos de facturación distintos a los de envío
+            </label>
+
+            <div class="billing-fields" id="billingFields">
+              <h2 style="margin-top:10px">Datos de facturación</h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="bilNombre">Nombre</label>
+                  <input type="text" id="bilNombre" name="bil_nombre">
+                </div>
+                <div class="form-group">
+                  <label for="bilApellido">Apellido</label>
+                  <input type="text" id="bilApellido" name="bil_apellido">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="bilDireccion">Dirección de facturación</label>
+                  <input type="text" id="bilDireccion" name="bil_direccion">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="bilDni">DNI / CUIT</label>
+                  <input type="text" id="bilDni" name="bil_dni">
+                </div>
+                <div class="form-group">
+                  <label for="bilTelefono">Teléfono</label>
+                  <input type="tel" id="bilTelefono" name="bil_telefono">
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="checkout-summary reveal-right">
+          <h3>Resumen del pedido</h3>
+          <div class="checkout-items" id="checkoutItems"></div>
+          <div class="checkout-totals">
+            <div class="line">
+              <span>Subtotal</span>
+              <span id="chkSubtotal">$0</span>
+            </div>
+            <div class="line">
+              <span>Envío por moto</span>
+              <span>$10.000</span>
+            </div>
+            <div class="line total">
+              <span>Total</span>
+              <span id="chkTotal">$0</span>
+            </div>
+          </div>
+          <div class="payment-section">
+            <img class="mp-logo" src="images/mercadopago.png" alt="Mercado Pago" height="36">
+            <div class="payment-cards">
+              <img src="images/visa.png" alt="Visa" height="28">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" height="28">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="American Express" height="28">
+            </div>
+            <p class="payment-msg">Te llevaremos a Mercado Pago para terminar la operación.</p>
+            <button class="btn-pay" id="btnPay" type="button">Confirmar y pagar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="images/logo.jpeg" alt="Botines FV" width="40" height="40">
+          <span>Botines de fútbol premium</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Inicio</a>
+          <a href="category.html">Productos</a>
+
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Developed and designed by: <a href="https://gokywebs.net" target="_blank" rel="noopener">Gokywebs</a> &mdash; gokywebs.net</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Botines | Botines FV</title>
+  <meta name="description" content="Explorá nuestro catálogo completo de botines de fútbol. Filtrá por marca, talle y precio. Nike, Adidas, Puma, Mizuno, Joma.">
+  <meta name="robots" content="index, follow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/jpeg" href="images/logo.jpeg">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-logo">
+        <a href="index.html">
+          <img src="images/logo.jpeg" alt="Botines FV" width="54" height="54">
+        </a>
+      </div>
+      <div class="header-center">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Buscar botines..." aria-label="Buscar productos">
+          <button type="button" id="searchBtn" aria-label="Buscar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+        </div>
+        <div class="nav-products" id="navProducts">
+          <button type="button">
+            Productos
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-dropdown">
+            <h4>Marcas</h4>
+            <ul>
+              <li><a href="category.html?marca=nike">Nike</a></li>
+              <li><a href="category.html?marca=adidas">Adidas</a></li>
+              <li><a href="category.html?marca=puma">Puma</a></li>
+              <li><a href="category.html?marca=mizuno">Mizuno</a></li>
+              <li><a href="category.html?marca=joma">Joma</a></li>
+            </ul>
+            <h4>Categorías</h4>
+            <ul>
+              <li><a href="category.html?categoria=adultos">Adultos</a></li>
+              <li><a href="category.html?categoria=kids">Kids</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="cart-btn" id="cartBtn" type="button" aria-label="Ver carrito">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Menú">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="mobile-menu" id="mobileMenu">
+    <div class="search-box" style="margin-bottom:20px">
+      <input type="text" id="mobileSearchInput" placeholder="Buscar botines..." aria-label="Buscar productos">
+      <button type="button" id="mobileSearchBtn" aria-label="Buscar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+    <h4>Marcas</h4>
+    <a href="category.html?marca=nike">Nike</a>
+    <a href="category.html?marca=adidas">Adidas</a>
+    <a href="category.html?marca=puma">Puma</a>
+    <a href="category.html?marca=mizuno">Mizuno</a>
+    <a href="category.html?marca=joma">Joma</a>
+    <h4>Categorías</h4>
+    <a href="category.html?categoria=adultos">Adultos</a>
+    <a href="category.html?categoria=kids">Kids</a>
+    <h4>Páginas</h4>
+    <a href="category.html">Todos los botines</a>
+  </nav>
+  <div class="mobile-menu-backdrop" id="mobileBackdrop"></div>
+
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="index.html">Inicio</a>
+      <span>/</span>
+      <span id="breadcrumbCurrent">Todos los botines</span>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="catalog-page">
+      <button class="filters-mobile-toggle" id="filtersMobileToggle" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><path d="M4 21V14M4 10V3M12 21V12M12 8V3M20 21V16M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+        Filtros
+      </button>
+      <aside class="filters-sidebar" id="filtersSidebar">
+        <div class="filter-group">
+          <h4>Marca</h4>
+          <label><input type="checkbox" name="marca" value="nike"> Nike</label>
+          <label><input type="checkbox" name="marca" value="adidas"> Adidas</label>
+          <label><input type="checkbox" name="marca" value="puma"> Puma</label>
+          <label><input type="checkbox" name="marca" value="mizuno"> Mizuno</label>
+          <label><input type="checkbox" name="marca" value="joma"> Joma</label>
+        </div>
+        <div class="filter-group">
+          <h4>Categoría</h4>
+          <label><input type="checkbox" name="categoria" value="adultos"> Adultos</label>
+          <label><input type="checkbox" name="categoria" value="kids"> Kids</label>
+        </div>
+        <div class="filter-group">
+          <h4>Tipo</h4>
+          <label><input type="checkbox" name="tipo" value="f11"> Fútbol 11</label>
+          <label><input type="checkbox" name="tipo" value="f5"> Fútbol 5 / Futsal</label>
+        </div>
+        <div class="filter-group">
+          <h4>Talle (ARG)</h4>
+          <label><input type="checkbox" name="talle" value="38"> 38</label>
+          <label><input type="checkbox" name="talle" value="39"> 39</label>
+          <label><input type="checkbox" name="talle" value="39.5"> 39½</label>
+          <label><input type="checkbox" name="talle" value="40"> 40</label>
+          <label><input type="checkbox" name="talle" value="41"> 41</label>
+          <label><input type="checkbox" name="talle" value="41.5"> 41½</label>
+          <label><input type="checkbox" name="talle" value="42"> 42</label>
+          <label><input type="checkbox" name="talle" value="43"> 43</label>
+          <label><input type="checkbox" name="talle" value="43.5"> 43½</label>
+          <label><input type="checkbox" name="talle" value="44"> 44</label>
+          <label><input type="checkbox" name="talle" value="44.5"> 44½</label>
+          <label><input type="checkbox" name="talle" value="45"> 45</label>
+        </div>
+        <div class="filter-group">
+          <h4>Precio máximo</h4>
+          <input type="range" id="priceRange" min="0" max="250000" step="10000" value="250000">
+          <div class="filter-range-values">
+            <span>$0</span>
+            <span id="priceRangeValue">$250.000</span>
+          </div>
+        </div>
+        <button class="btn-apply-filters" id="applyFilters" type="button">Aplicar filtros</button>
+      </aside>
+      <div class="products-area">
+        <div class="products-header">
+          <h2 id="categoryTitle">Todos los botines</h2>
+          <span class="products-count" id="productsCount"></span>
+        </div>
+        <div class="products-grid" id="productsGrid">
+        </div>
+        <div class="empty-state" id="emptyState" style="display:none">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <p>No se encontraron productos con los filtros seleccionados.</p>
+        </div>
+        <button class="btn-load-more" id="loadMoreBtn" type="button" style="display:none">Cargar más productos</button>
+      </div>
+    </div>
+  </main>
+
+  <div class="cart-backdrop" id="cartBackdrop"></div>
+  <aside class="cart-sidebar" id="cartSidebar" aria-label="Carrito de compras">
+    <div class="cart-header">
+      <h3>Tu Carrito</h3>
+      <button class="cart-close" id="cartClose" aria-label="Cerrar carrito">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty" id="cartEmpty">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <p>Tu carrito está vacío</p>
+      </div>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cartTotal">$0</span>
+      </div>
+      <a href="checkout.html" class="btn-checkout">Finalizar compra</a>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="images/logo.jpeg" alt="Botines FV" width="40" height="40">
+          <span>Botines de fútbol premium</span>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Inicio</a>
+          <a href="category.html">Productos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Developed and designed by: <a href="https://gokywebs.net" target="_blank" rel="noopener">Gokywebs</a> &mdash; gokywebs.net</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
