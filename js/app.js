@@ -474,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paymentMsg = document.getElementById('paymentMsg');
     let zonaInfo = document.getElementById('zonaInfo');
     let optionMP = document.getElementById('optionMP');
+    let optionEfectivo = document.getElementById('optionEfectivo');
 
     if (chkSubtotal) chkSubtotal.textContent = Cart.formatPrice(subtotal);
 
@@ -535,20 +536,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentZona === 'caba' || currentZona === 'amba') {
           zonaInfo.className += ' zona-ok';
           zonaInfo.innerHTML = '✓ Envío por moto disponible — <strong>$10.000</strong>. Todos los métodos de pago habilitados.';
-          // Enable MP
+          // Enable all methods
           if (optionMP) optionMP.classList.remove('disabled');
+          if (optionEfectivo) optionEfectivo.classList.remove('disabled');
         } else if (currentZona === 'otra') {
           zonaInfo.className += ' zona-warn';
-          zonaInfo.innerHTML = 'El envío se coordina por WhatsApp. Solo disponible pago con transferencia o efectivo.';
-          // Disable MP, uncheck if selected
-          if (optionMP) {
-            optionMP.classList.add('disabled');
-            let mpRadio = optionMP.querySelector('input');
-            if (mpRadio && mpRadio.checked) {
-              mpRadio.checked = false;
+          zonaInfo.innerHTML = 'El envío se coordina por WhatsApp. Disponible pago con transferencia o Mercado Pago.';
+          // Disable efectivo for interior
+          if (optionEfectivo) {
+            optionEfectivo.classList.add('disabled');
+            let efRadio = optionEfectivo.querySelector('input');
+            if (efRadio && efRadio.checked) {
+              efRadio.checked = false;
               currentPayment = '';
             }
           }
+          // Enable MP for interior
+          if (optionMP) optionMP.classList.remove('disabled');
         } else {
           zonaInfo.className = 'zona-info';
         }
@@ -692,7 +696,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function redirectToWhatsApp() {
       let text = buildOrderSummaryText();
       let url = `https://wa.me/${WSP_NUMBER}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
+      // Usar location.href para compatibilidad con iPhone/Safari
+      window.location.href = url;
     }
 
     if (btnPay) {
@@ -744,16 +749,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         db.collection('orders').add(orderData).then(docRef => {
           if (currentPayment === 'mercadopago') {
-            // No enviar email hasta que se confirme el pago en MercadoPago
             Cart.clear();
             Cart.showToast('Orden creada correctamente');
-            alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redireccionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
+            alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
+            btnPay.textContent = 'Confirmar y pagar';
+            btnPay.classList.add('enabled');
           } else {
-            // Transferencia o efectivo → email + WhatsApp
             sendEmailNotification();
             Cart.clear();
             Cart.showToast('¡Pedido enviado! Te redirigimos a WhatsApp.');
-            redirectToWhatsApp();
+            btnPay.textContent = 'Compra completada';
+            // Pequeño delay para que se vea el toast antes de redirigir
+            setTimeout(() => { redirectToWhatsApp(); }, 500);
           }
         }).catch(err => {
           btnPay.textContent = currentPayment === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar por WhatsApp';
