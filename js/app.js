@@ -693,8 +693,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    function redirectToWhatsApp() {
+    function redirectToWhatsApp(paidByMP) {
       let text = buildOrderSummaryText();
+      if (paidByMP) {
+        text += `\n\n✅ *YA PAGADO POR MERCADO PAGO* — Necesito coordinar el envío.`;
+      }
       let url = `https://wa.me/${WSP_NUMBER}?text=${encodeURIComponent(text)}`;
       // Usar location.href para compatibilidad con iPhone/Safari
       window.location.href = url;
@@ -750,17 +753,25 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('orders').add(orderData).then(docRef => {
           if (currentPayment === 'mercadopago') {
             Cart.clear();
-            Cart.showToast('Orden creada correctamente');
-            alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
-            btnPay.textContent = 'Confirmar y pagar';
-            btnPay.classList.add('enabled');
+            if (currentZona === 'otra') {
+              
+              Cart.showToast('Orden creada. Te redirigimos a WhatsApp para coordinar el envío.');
+              btnPay.textContent = 'Compra completada';
+              alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nLuego te redirigiremos a WhatsApp para coordinar el envío.');
+              setTimeout(() => { redirectToWhatsApp(true); }, 500);
+            } else {
+              
+              Cart.showToast('Orden creada correctamente');
+              alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
+              btnPay.textContent = 'Confirmar y pagar';
+              btnPay.classList.add('enabled');
+            }
           } else {
             sendEmailNotification();
             Cart.clear();
             Cart.showToast('¡Pedido enviado! Te redirigimos a WhatsApp.');
             btnPay.textContent = 'Compra completada';
-            // Pequeño delay para que se vea el toast antes de redirigir
-            setTimeout(() => { redirectToWhatsApp(); }, 500);
+            setTimeout(() => { redirectToWhatsApp(false); }, 500);
           }
         }).catch(err => {
           btnPay.textContent = currentPayment === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar por WhatsApp';
