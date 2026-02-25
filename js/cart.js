@@ -27,6 +27,7 @@ const Cart = {
         price: product.price,
         size: product.size,
         image: product.image,
+        productCode: product.productCode || null,
         qty: 1
       });
     }

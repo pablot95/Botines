@@ -120,8 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  let isSaving = false;
+
   productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isSaving) return;
+    isSaving = true;
+    let submitBtn = productForm.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Guardando...'; }
+
+    try {
     let id = document.getElementById('productId').value;
     let name = document.getElementById('pName').value.trim();
     let brand = document.getElementById('pBrand').value;
@@ -167,12 +175,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (id) {
       await db.collection('products').doc(id).update(productData);
     } else {
+      // Auto-generate productCode
+      let maxCode = 0;
+      let allDocs = await db.collection('products').get();
+      allDocs.forEach(d => {
+        let c = d.data().productCode || 0;
+        if (c > maxCode) maxCode = c;
+      });
+      productData.productCode = maxCode + 1;
       productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('products').add(productData);
     }
 
     closeModal();
     loadProducts();
+    } catch (err) {
+      console.error('Error al guardar producto:', err);
+      alert('Error al guardar el producto. Intentá de nuevo.');
+    } finally {
+      isSaving = false;
+      let submitBtn = productForm.querySelector('button[type="submit"]');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Guardar producto'; }
+    }
   });
 
   function formatPrice(n) {
@@ -193,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '../images/logo.jpeg';
         tr.innerHTML = `
           <td><img src="${imgSrc}" alt="${p.name}"></td>
-          <td>${p.name}</td>
+          <td>${p.name} <small style="color:#999;font-weight:400">#${p.productCode || '—'}</small></td>
           <td>${p.brand || ''}</td>
           <td>${p.type === 'f11' ? 'Fútbol 11' : 'Fútbol 5'}</td>
           <td>${formatPrice(p.price)}</td>

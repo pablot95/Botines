@@ -121,14 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
       sizesText = `Talles: ${argSizes}`;
     }
 
+    let typeText = product.type === 'f11' ? 'Fútbol 11' : product.type === 'f5' ? 'Fútbol 5 / Futsal' : '';
+
+    let codeText = product.productCode ? `<span class="product-card-code">#${product.productCode}</span>` : '';
+
     card.innerHTML = `
       <div class="product-card-img">
         <img src="${imgSrc}" alt="${product.name}" width="300" height="300" loading="lazy">
         ${product.featured ? '<span class="product-card-badge">Destacado</span>' : ''}
       </div>
       <div class="product-card-body">
-        <div class="product-card-brand">${product.brand || ''}</div>
-        <div class="product-card-name">${product.name}</div>
+        ${typeText || codeText ? `<div class="product-card-type">${typeText}${codeText}</div>` : ''}
         <div class="product-card-price">${formatPrice(product.price)}</div>
         ${sizesText ? `<div class="product-card-sizes">${sizesText}</div>` : ''}
       </div>
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (initialBrand && categoryTitle) {
       let brandName = initialBrand.charAt(0).toUpperCase() + initialBrand.slice(1);
-      categoryTitle.textContent = 'Botines ' + brandName;
+      categoryTitle.textContent = 'Botines ';
       if (breadcrumbCurrent) breadcrumbCurrent.textContent = brandName;
       let checkbox = document.querySelector(`input[name="marca"][value="${initialBrand}"]`);
       if (checkbox) checkbox.checked = true;
@@ -270,23 +273,35 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    function applyCurrentFilters() {
+      displayedCount = 0;
+      let filters = getActiveFilters();
+      let filtered = allProducts.filter(p => filterProduct(p, filters));
+      renderProducts(filtered);
+    }
+
     let applyFilters = document.getElementById('applyFilters');
     if (applyFilters) {
       applyFilters.addEventListener('click', () => {
-        displayedCount = 0;
-        let filters = getActiveFilters();
-        let filtered = allProducts.filter(p => filterProduct(p, filters));
-        renderProducts(filtered);
+        applyCurrentFilters();
         let sidebar = document.getElementById('filtersSidebar');
         if (sidebar && window.innerWidth < 960) sidebar.classList.remove('mobile-open');
       });
     }
+
+    // Auto-apply filters on any checkbox change
+    document.querySelectorAll('.filters-sidebar input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        applyCurrentFilters();
+      });
+    });
 
     let priceRange = document.getElementById('priceRange');
     let priceRangeValue = document.getElementById('priceRangeValue');
     if (priceRange && priceRangeValue) {
       priceRange.addEventListener('input', () => {
         priceRangeValue.textContent = formatPrice(parseInt(priceRange.value));
+        applyCurrentFilters();
       });
     }
 
@@ -378,7 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
               brand: product.brand,
               price: product.price,
               size: selectedSize,
-              image: (product.images && product.images[0]) || 'images/logo.jpeg'
+              image: (product.images && product.images[0]) || 'images/logo.jpeg',
+              productCode: product.productCode || null
             });
           });
         }
@@ -395,7 +411,8 @@ document.addEventListener('DOMContentLoaded', () => {
               brand: product.brand,
               price: product.price,
               size: selectedSize,
-              image: (product.images && product.images[0]) || 'images/logo.jpeg'
+              image: (product.images && product.images[0]) || 'images/logo.jpeg',
+              productCode: product.productCode || null
             });
             window.location.href = 'checkout.html';
           });
@@ -424,10 +441,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const checkoutItems = document.getElementById('checkoutItems');
   if (checkoutItems) {
+    const WSP_NUMBER = '5491132053335';
+    const EMAILJS_SERVICE = 'YOUR_SERVICE_ID';   // ← reemplazar
+    const EMAILJS_TEMPLATE = 'YOUR_TEMPLATE_ID'; // ← reemplazar
+    const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // ← reemplazar
+
     let items = Cart.getItems();
     let subtotal = Cart.getTotal();
-    let shipping = 10000;
-    let total = subtotal + shipping;
+    let currentShipping = 0;
+    let currentZona = '';
+    let currentPayment = '';
 
     if (items.length === 0) {
       checkoutItems.innerHTML = '<p style="color:var(--gray);font-size:0.88rem">Tu carrito está vacío. <a href="category.html" style="color:var(--gold)">Ver productos</a></p>';
@@ -446,8 +469,108 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let chkSubtotal = document.getElementById('chkSubtotal');
     let chkTotal = document.getElementById('chkTotal');
+    let shippingLabel = document.getElementById('shippingLabel');
+    let shippingCost = document.getElementById('shippingCost');
+    let paymentMsg = document.getElementById('paymentMsg');
+    let zonaInfo = document.getElementById('zonaInfo');
+    let optionMP = document.getElementById('optionMP');
+
     if (chkSubtotal) chkSubtotal.textContent = Cart.formatPrice(subtotal);
-    if (chkTotal) chkTotal.textContent = Cart.formatPrice(total);
+
+    function updateTotals() {
+      let total = subtotal + currentShipping;
+      if (chkTotal) chkTotal.textContent = Cart.formatPrice(total);
+    }
+
+    function updateShippingDisplay() {
+      if (currentZona === 'caba' || currentZona === 'amba') {
+        currentShipping = 10000;
+        if (shippingLabel) shippingLabel.textContent = 'Envío por moto';
+        if (shippingCost) shippingCost.textContent = Cart.formatPrice(10000);
+      } else if (currentZona === 'otra') {
+        currentShipping = 0;
+        if (shippingLabel) shippingLabel.textContent = 'Envío';
+        if (shippingCost) shippingCost.textContent = 'A coordinar';
+      } else {
+        currentShipping = 0;
+        if (shippingLabel) shippingLabel.textContent = 'Envío';
+        if (shippingCost) shippingCost.textContent = '—';
+      }
+      updateTotals();
+    }
+
+    // Auto-detect zone from CP
+    function detectZonaFromCP(cp) {
+      let num = parseInt(cp.replace(/\D/g, ''), 10);
+      if (isNaN(num) || num < 1000) return '';
+      if (num >= 1000 && num <= 1499) return 'caba';
+      if (num >= 1600 && num <= 1899) return 'amba';
+      return 'otra';
+    }
+
+    let cpInput = document.getElementById('chkCP');
+    let zonaSelect = document.getElementById('chkZona');
+
+    if (cpInput && zonaSelect) {
+      cpInput.addEventListener('input', () => {
+        let cpVal = cpInput.value.trim();
+        if (cpVal.length >= 4) {
+          let detected = detectZonaFromCP(cpVal);
+          if (detected) {
+            zonaSelect.value = detected;
+            zonaSelect.dispatchEvent(new Event('change'));
+          }
+        }
+      });
+    }
+
+    // Zone change
+    if (zonaSelect) {
+      zonaSelect.addEventListener('change', () => {
+        currentZona = zonaSelect.value;
+        updateShippingDisplay();
+
+        // Update zone info
+        zonaInfo.className = 'zona-info show';
+        if (currentZona === 'caba' || currentZona === 'amba') {
+          zonaInfo.className += ' zona-ok';
+          zonaInfo.innerHTML = '✓ Envío por moto disponible — <strong>$10.000</strong>. Todos los métodos de pago habilitados.';
+          // Enable MP
+          if (optionMP) optionMP.classList.remove('disabled');
+        } else if (currentZona === 'otra') {
+          zonaInfo.className += ' zona-warn';
+          zonaInfo.innerHTML = 'El envío se coordina por WhatsApp. Solo disponible pago con transferencia o efectivo.';
+          // Disable MP, uncheck if selected
+          if (optionMP) {
+            optionMP.classList.add('disabled');
+            let mpRadio = optionMP.querySelector('input');
+            if (mpRadio && mpRadio.checked) {
+              mpRadio.checked = false;
+              currentPayment = '';
+            }
+          }
+        } else {
+          zonaInfo.className = 'zona-info';
+        }
+        updatePayButton();
+      });
+    }
+
+    // Payment method change
+    let paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        currentPayment = radio.value;
+        if (currentPayment === 'mercadopago') {
+          if (paymentMsg) paymentMsg.textContent = 'Te llevaremos a Mercado Pago para terminar la operación.';
+        } else if (currentPayment === 'transferencia') {
+          if (paymentMsg) paymentMsg.textContent = 'Te redirigiremos a WhatsApp para coordinar la transferencia.';
+        } else if (currentPayment === 'efectivo') {
+          if (paymentMsg) paymentMsg.textContent = 'Te redirigiremos a WhatsApp para coordinar el pago en efectivo.';
+        }
+        updatePayButton();
+      });
+    });
 
     let billingToggle = document.getElementById('billingToggle');
     let billingFields = document.getElementById('billingFields');
@@ -466,18 +589,113 @@ document.addEventListener('DOMContentLoaded', () => {
       let email = document.getElementById('chkEmail').value.trim();
       let telefono = document.getElementById('chkTelefono').value.trim();
       let direccion = document.getElementById('chkDireccion').value.trim();
-      return nombre && apellido && email && telefono && direccion;
+      let ciudad = document.getElementById('chkCiudad').value.trim();
+      let provincia = document.getElementById('chkProvincia').value.trim();
+      let cp = document.getElementById('chkCP').value.trim();
+      return nombre && apellido && email && telefono && direccion && ciudad && provincia && cp && currentZona && currentPayment;
     }
 
-    if (checkoutForm && btnPay) {
-      checkoutForm.addEventListener('input', () => {
-        if (validateForm()) {
-          btnPay.classList.add('enabled');
+    function updatePayButton() {
+      if (validateForm()) {
+        btnPay.classList.add('enabled');
+        if (currentPayment === 'mercadopago') {
+          btnPay.textContent = 'Confirmar y pagar';
         } else {
-          btnPay.classList.remove('enabled');
+          btnPay.textContent = 'Confirmar por WhatsApp';
         }
-      });
+      } else {
+        btnPay.classList.remove('enabled');
+        btnPay.textContent = 'Confirmar pedido';
+      }
+    }
 
+    if (checkoutForm) {
+      checkoutForm.addEventListener('input', updatePayButton);
+    }
+
+    function buildOrderSummaryText() {
+      let nombre = document.getElementById('chkNombre').value.trim();
+      let apellido = document.getElementById('chkApellido').value.trim();
+      let email = document.getElementById('chkEmail').value.trim();
+      let telefono = document.getElementById('chkTelefono').value.trim();
+      let direccion = document.getElementById('chkDireccion').value.trim();
+      let ciudad = document.getElementById('chkCiudad').value.trim();
+      let provincia = document.getElementById('chkProvincia').value.trim();
+      let cp = document.getElementById('chkCP').value.trim();
+      let mensaje = document.getElementById('chkMensaje').value.trim();
+      let zonaText = currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona';
+      let payText = currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia' : 'Efectivo';
+      let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) + ' (moto)' : 'A coordinar';
+      let total = subtotal + currentShipping;
+
+      let text = `🛒 *NUEVO PEDIDO — Botines FV*\n\n`;
+      text += `👤 *Cliente:* ${nombre} ${apellido}\n`;
+      text += `📧 *Email:* ${email}\n`;
+      text += `📱 *Tel:* ${telefono}\n`;
+      text += `📍 *Dirección:* ${direccion}\n`;
+      text += `🏙️ *Ciudad:* ${ciudad}\n`;
+      text += `🏛️ *Provincia:* ${provincia}\n`;
+      text += `📮 *CP:* ${cp}\n`;
+      text += `🗺️ *Zona:* ${zonaText}\n`;
+      if (mensaje) text += `💬 *Mensaje:* ${mensaje}\n`;
+      text += `\n📦 *Productos:*\n`;
+      items.forEach(item => {
+        let codeTag = item.productCode ? `#${item.productCode} ` : '';
+        text += `• ${codeTag}${item.name} — Talle ${item.size} (x${item.qty}) — ${Cart.formatPrice(item.price * item.qty)}\n`;
+      });
+      text += `\n💰 *Subtotal:* ${Cart.formatPrice(subtotal)}\n`;
+      text += `🚚 *Envío:* ${shippingText}\n`;
+      text += `✅ *Total:* ${Cart.formatPrice(total)}\n`;
+      text += `💳 *Método de pago:* ${payText}`;
+      return text;
+    }
+
+    function buildEmailHTML() {
+      let nombre = document.getElementById('chkNombre').value.trim();
+      let apellido = document.getElementById('chkApellido').value.trim();
+      let email = document.getElementById('chkEmail').value.trim();
+      let telefono = document.getElementById('chkTelefono').value.trim();
+      let direccion = document.getElementById('chkDireccion').value.trim();
+      let ciudad = document.getElementById('chkCiudad').value.trim();
+      let provincia = document.getElementById('chkProvincia').value.trim();
+      let cp = document.getElementById('chkCP').value.trim();
+      let total = subtotal + currentShipping;
+      let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) : 'A coordinar';
+
+      let itemsHTML = items.map(item => {
+        let codeTag = item.productCode ? `#${item.productCode} ` : '';
+        return `${codeTag}${item.name} — Talle ${item.size} (x${item.qty}) — ${Cart.formatPrice(item.price * item.qty)}`;
+      }).join('\n');
+
+      return {
+        customer_name: `${nombre} ${apellido}`,
+        customer_email: email,
+        customer_phone: telefono,
+        customer_address: `${direccion}, ${ciudad}, ${provincia} (${cp})`,
+        customer_zone: currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona',
+        order_items: itemsHTML,
+        order_subtotal: Cart.formatPrice(subtotal),
+        order_shipping: shippingText,
+        order_total: Cart.formatPrice(total),
+        payment_method: currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia' : 'Efectivo'
+      };
+    }
+
+    function sendEmailNotification() {
+      try {
+        emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, buildEmailHTML(), EMAILJS_PUBLIC_KEY);
+      } catch (e) {
+        console.warn('EmailJS error:', e);
+      }
+    }
+
+    function redirectToWhatsApp() {
+      let text = buildOrderSummaryText();
+      let url = `https://wa.me/${WSP_NUMBER}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    if (btnPay) {
       btnPay.addEventListener('click', () => {
         if (!validateForm()) return;
 
@@ -488,7 +706,11 @@ document.addEventListener('DOMContentLoaded', () => {
             email: document.getElementById('chkEmail').value.trim(),
             telefono: document.getElementById('chkTelefono').value.trim(),
             direccion: document.getElementById('chkDireccion').value.trim(),
-            mensaje: document.getElementById('chkMensaje').value.trim()
+            ciudad: document.getElementById('chkCiudad').value.trim(),
+            provincia: document.getElementById('chkProvincia').value.trim(),
+            cp: document.getElementById('chkCP').value.trim(),
+            mensaje: document.getElementById('chkMensaje').value.trim(),
+            zona: currentZona
           },
           billing: null,
           items: items.map(i => ({
@@ -500,8 +722,9 @@ document.addEventListener('DOMContentLoaded', () => {
             qty: i.qty
           })),
           subtotal: subtotal,
-          shipping: shipping,
-          total: total,
+          shipping: currentShipping,
+          total: subtotal + currentShipping,
+          paymentMethod: currentPayment,
           status: 'pending',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
@@ -520,11 +743,20 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPay.classList.remove('enabled');
 
         db.collection('orders').add(orderData).then(docRef => {
-          Cart.clear();
-          Cart.showToast('Orden creada correctamente');
-          alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redireccionaría a Mercado Pago para completar el pago.');
+          if (currentPayment === 'mercadopago') {
+            // No enviar email hasta que se confirme el pago en MercadoPago
+            Cart.clear();
+            Cart.showToast('Orden creada correctamente');
+            alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redireccionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
+          } else {
+            // Transferencia o efectivo → email + WhatsApp
+            sendEmailNotification();
+            Cart.clear();
+            Cart.showToast('¡Pedido enviado! Te redirigimos a WhatsApp.');
+            redirectToWhatsApp();
+          }
         }).catch(err => {
-          btnPay.textContent = 'Confirmar y pagar';
+          btnPay.textContent = currentPayment === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar por WhatsApp';
           btnPay.classList.add('enabled');
           Cart.showToast('Error al crear la orden. Intentá de nuevo.');
         });
