@@ -784,6 +784,166 @@ input, select, textarea {
   }
 }
 
+/* === Liga de Streamers === */
+.streamers-section {
+  padding: 70px 0;
+  background: #111;
+  position: relative;
+  z-index: 2;
+}
+
+.streamers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  gap: 14px;
+}
+
+.streamer-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.streamer-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .45s cubic-bezier(.25,.46,.45,.94), filter .45s ease;
+  filter: brightness(.85);
+}
+
+.streamer-card:hover img {
+  transform: scale(1.08);
+  filter: brightness(1);
+}
+
+.streamer-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.55) 100%);
+  pointer-events: none;
+  transition: opacity .4s ease;
+}
+
+.streamer-card:hover::after {
+  opacity: .4;
+}
+
+/* Streamer Modal / Lightbox */
+.streamer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility .3s ease;
+}
+
+.streamer-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.streamer-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .85);
+  backdrop-filter: blur(6px);
+}
+
+.streamer-modal-content {
+  position: relative;
+  z-index: 1;
+  max-width: 90vw;
+  max-height: 90vh;
+  animation: streamerZoomIn .3s ease;
+}
+
+.streamer-modal-content img {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+  object-fit: contain;
+}
+
+.streamer-modal-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, .15);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.streamer-modal-close:hover {
+  background: rgba(255, 255, 255, .3);
+}
+
+@keyframes streamerZoomIn {
+  from { transform: scale(.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Imagen grande izquierda (1ra) */
+.streamer-card:nth-child(1) {
+  grid-column: span 2;
+  grid-row: span 2;
+  aspect-ratio: 1 / 1;
+}
+
+/* Imagen grande derecha (6ta) - alternada */
+.streamer-card:nth-child(6) {
+  grid-column: 3   / span 2;
+  grid-row: span 2;
+  aspect-ratio: 2/2;
+}
+
+@media (max-width: 960px) {
+  .streamers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .streamer-card:nth-child(1),
+  .streamer-card:nth-child(6) {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 600px) {
+  .streamers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .streamer-card:nth-child(1),
+  .streamer-card:nth-child(6),
+  .streamer-card:nth-child(11) {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 16 / 9;
+  }
+}
+
 .shipping-banner {
   background: var(--black);
   padding: 50px 0;

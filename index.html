@@ -239,6 +239,64 @@
     </div>
   </section>
 
+  <section class="streamers-section">
+    <div class="container">
+      <h2 class="section-title reveal">Liga de Streamers</h2>
+      <div class="streamers-grid">
+        <div class="streamer-card reveal stagger-1">
+          <img src="images/botinescollage1.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-2">
+          <img src="images/botinescollage2.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-3">
+          <img src="images/botinescollage111.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-4">
+          <img src="images/botinescollage12.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-1">
+          <img src="images/botinescollage13.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-2">
+          <img src="images/botinescollage14.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-3">
+          <img src="images/botinescollage15.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-4">
+          <img src="images/botinescollage16.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-1">
+          <img src="images/botinescollage17.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-2">
+          <img src="images/botinescollage18.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-3">
+          <img src="images/botinescollage19.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-4">
+          <img src="images/botinescollage21.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-1">
+          <img src="images/botinescollage22.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+        <div class="streamer-card reveal stagger-2">
+          <img src="images/botinescollage23.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="streamerModal" class="streamer-modal">
+    <div class="streamer-modal-backdrop"></div>
+    <div class="streamer-modal-content">
+      <button class="streamer-modal-close" aria-label="Cerrar">&times;</button>
+      <img id="streamerModalImg" src="" alt="">
+    </div>
+  </div>
+
   <section class="shipping-banner">
     <div class="container">
       <div class="shipping-inner reveal">
@@ -327,5 +385,30 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    (function() {
+      const modal = document.getElementById('streamerModal');
+      const modalImg = document.getElementById('streamerModalImg');
+      const closeBtn = modal.querySelector('.streamer-modal-close');
+      const backdrop = modal.querySelector('.streamer-modal-backdrop');
+
+      document.querySelectorAll('.streamer-card img').forEach(img => {
+        img.addEventListener('click', () => {
+          modalImg.src = img.src;
+          modalImg.alt = img.alt;
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      closeBtn.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', closeModal);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    })();
+  </script>
 </body>
 </html>
