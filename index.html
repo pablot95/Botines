@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Botines FV | Botines de Fútbol - Nike, Adidas, Puma, Mizuno, Joma</title>
-  <meta name="description" content="Tienda online de botines de fútbol. Nike, Adidas, Puma, Mizuno y Joma. Fútbol 11 y Fútbol 5. Todos incluyen mochila, caja y medias antideslizantes. Envíos por moto.">
-  <meta name="keywords" content="botines fútbol, botines nike, botines adidas, botines puma, fútbol 11, fútbol 5, futsal, botines, comprar botines">
+  <title>Botines FV | Botines de Fútbol</title>
+  <meta name="description" content="Tienda online de botines de fútbol. Fútbol 11, Fútbol 5, Futsal, Adultos y Kids. Todos incluyen mochila, caja y medias antideslizantes. Envíos por moto.">
+  <meta name="keywords" content="botines fútbol, fútbol 11, fútbol 5, futsal, botines adultos, botines kids, comprar botines">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Botines FV | Botines de Fútbol">
-  <meta property="og:description" content="Los mejores botines de fútbol. Nike, Adidas, Puma, Mizuno y Joma. Incluyen mochila, caja y medias antideslizantes.">
+  <meta property="og:description" content="Los mejores botines de fútbol. Fútbol 11, Fútbol 5, Futsal, Adultos y Kids. Incluyen mochila, caja y medias antideslizantes.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="images/hero1.jpg">
+  <meta property="og:image" content="images/hero1.jpeg">
   <link rel="canonical" href="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,22 +54,19 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div class="nav-dropdown">
-            <h4>Marcas</h4>
-            <ul>
-              <li><a href="category.html?marca=nike">Nike</a></li>
-              <li><a href="category.html?marca=adidas">Adidas</a></li>
-              <li><a href="category.html?marca=puma">Puma</a></li>
-              <li><a href="category.html?marca=mizuno">Mizuno</a></li>
-              <li><a href="category.html?marca=joma">Joma</a></li>  
-            </ul>
             <h4>Categorías</h4>
             <ul>
+              <li><a href="category.html">Todos los botines</a></li>
+              <li><a href="category.html?categoria=f11">Fútbol 11</a></li>
+              <li><a href="category.html?categoria=f5">Fútbol 5</a></li>
+              <li><a href="category.html?categoria=futsal">Futsal</a></li>
               <li><a href="category.html?categoria=adultos">Adultos</a></li>
               <li><a href="category.html?categoria=kids">Kids</a></li>
             </ul>
           </div>
         </div>
         <a href="#promo" class="nav-link-promos">Promos</a>
+        <a href="#clientes" class="nav-link-promos">Clientes</a>
       </div>
       <div class="header-right">
         <button class="cart-btn" id="cartBtn" type="button" aria-label="Ver carrito">
@@ -90,17 +87,15 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
     </div>
-    <h4>Marcas</h4>
-    <a href="category.html?marca=nike">Nike</a>
-    <a href="category.html?marca=adidas">Adidas</a>
-    <a href="category.html?marca=puma">Puma</a>
-    <a href="category.html?marca=mizuno">Mizuno</a>
-    <a href="category.html?marca=joma">Joma</a>
     <h4>Categorías</h4>
+    <a href="category.html?categoria=f11">Fútbol 11</a>
+    <a href="category.html?categoria=f5">Fútbol 5</a>
+    <a href="category.html?categoria=futsal">Futsal</a>
     <a href="category.html?categoria=adultos">Adultos</a>
     <a href="category.html?categoria=kids">Kids</a>
     <h4>Páginas</h4>
-    <a href="promos.html">Promos</a>
+    <a href="#promos">Promos</a>
+    <a href="#clientes">Clientes</a>
     <a href="category.html">Todos los botines</a>
   </nav>
   <div class="mobile-menu-backdrop" id="mobileBackdrop"></div>
@@ -109,7 +104,7 @@
     <section class="hero" aria-label="Destacados">
       <div class="hero-track" id="heroTrack">
         <div class="hero-slide">
-          <img src="images/hero1.jpg" alt="Botines de fútbol - Colección destacada" width="1920" height="600" loading="eager">
+          <img src="images/hero1.jpeg" alt="Botines de fútbol - Colección destacada" width="1920" height="600" loading="eager">
           <div class="hero-overlay"></div>
         </div>
         <div class="hero-slide">
@@ -138,36 +133,36 @@
   <section class="categories-section">
     <div class="container">
       <div class="categories-grid">
-        <a href="category.html?marca=nike" class="cat-card reveal stagger-1">
-          <img src="images/nike-category.png" alt="Botines Nike" width="400" height="300" loading="lazy">
+        <a href="category.html?categoria=f11" class="cat-card reveal stagger-1">
+          <img src="images/nike-category.png" alt="Botines Fútbol 11" width="400" height="300" loading="lazy">
           <div class="cat-card-overlay">
-            <span class="cat-card-name">Nike</span>
+            <span class="cat-card-name">Fútbol 11</span>
           </div>
         </a>
-        <a href="category.html?marca=adidas" class="cat-card reveal stagger-2">
-          <img src="images/adidas-category.png" alt="Botines Adidas" width="400" height="300" loading="lazy">
+        <a href="category.html?categoria=f5" class="cat-card reveal stagger-2">
+          <img src="images/adidas-category.png" alt="Botines Fútbol 5" width="400" height="300" loading="lazy">
           <div class="cat-card-overlay">
-            <span class="cat-card-name">Adidas</span>
+            <span class="cat-card-name">Fútbol 5</span>
           </div>
         </a>
-        <a href="category.html?marca=puma" class="cat-card reveal stagger-3">
-          <img src="images/puma-category.png" alt="Botines Puma" width="400" height="300" loading="lazy">
+        <a href="category.html?categoria=futsal" class="cat-card reveal stagger-3">
+          <img src="images/puma-category.png" alt="Botines Futsal" width="400" height="300" loading="lazy">
           <div class="cat-card-overlay">
-            <span class="cat-card-name">Puma</span>
+            <span class="cat-card-name">Futsal</span>
           </div>
         </a>
       </div>
       <div class="categories-bottom-row">
-        <a href="category.html?marca=mizuno" class="cat-card reveal stagger-4">
-          <img src="images/mizuno-category.jpeg" alt="Botines Mizuno" width="400" height="300" loading="lazy">
+        <a href="category.html?categoria=adultos" class="cat-card reveal stagger-4">
+          <img src="images/mizuno-category.jpeg" alt="Botines Adultos" width="400" height="300" loading="lazy">
           <div class="cat-card-overlay">
-            <span class="cat-card-name">Mizuno</span>
+            <span class="cat-card-name">Adultos</span>
           </div>
         </a>
-        <a href="category.html?marca=joma" class="cat-card reveal stagger-5">
-          <img src="images/joma-category.jpeg" alt="Botines Joma" width="400" height="300" loading="lazy">
+        <a href="category.html?categoria=kids" class="cat-card reveal stagger-5">
+          <img src="images/joma-category.jpeg" alt="Botines Kids" width="400" height="300" loading="lazy">
           <div class="cat-card-overlay">
-            <span class="cat-card-name">Joma</span>
+            <span class="cat-card-name">Kids</span>
           </div>
         </a>
       </div>
@@ -239,61 +234,97 @@
     </div>
   </section>
 
-  <section class="streamers-section">
+  <section class="clientes-section" id="clientes">
     <div class="container">
-      <h2 class="section-title reveal">Liga de Streamers</h2>
-      <div class="streamers-grid">
-        <div class="streamer-card reveal stagger-1">
-          <img src="images/botinescollage1.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-2">
-          <img src="images/botinescollage2.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-3">
-          <img src="images/botinescollage111.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-4">
-          <img src="images/botinescollage12.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-1">
-          <img src="images/botinescollage13.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-2">
-          <img src="images/botinescollage14.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-3">
-          <img src="images/botinescollage15.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-4">
-          <img src="images/botinescollage16.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-1">
-          <img src="images/botinescollage17.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-2">
-          <img src="images/botinescollage18.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-3">
-          <img src="images/botinescollage19.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-4">
-          <img src="images/botinescollage21.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-1">
-          <img src="images/botinescollage22.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
-        <div class="streamer-card reveal stagger-2">
-          <img src="images/botinescollage23.jpeg" alt="Jugador Liga de Streamers" loading="lazy">
-        </div>
+      <h2 class="section-title reveal">Clientes de Primera</h2>
+      <div class="clientes-collage" id="collageClientes">
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera1.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera2.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera3.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera4.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera5.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera6.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera7.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera8.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera9.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera10.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera11.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera12.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera13.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera14.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera15.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera16.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera17.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera18.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera19.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera20.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera21.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera22.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera23.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera24.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera25.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera26.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera27.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera28.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera29.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera30.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera31.jpeg" alt="Cliente de primera" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesdeprimera/clientesdeprimera32.jpeg" alt="Cliente de primera" loading="lazy"></div>
       </div>
     </div>
   </section>
 
-  <div id="streamerModal" class="streamer-modal">
-    <div class="streamer-modal-backdrop"></div>
-    <div class="streamer-modal-content">
-      <button class="streamer-modal-close" aria-label="Cerrar">&times;</button>
-      <img id="streamerModalImg" src="" alt="">
+  <section class="clientes-section opiniones-section">
+    <div class="container">
+      <h2 class="section-title reveal">Clientes</h2>
+      <div class="opiniones-collage" id="collageOpiniones">
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones1.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones2.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones3.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones4.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones5.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones6.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones7.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones8.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones9.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones10.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones11.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones12.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones13.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones14.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones15.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones16.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones17.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones18.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones19.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones20.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones21.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones22.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones23.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones24.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones25.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones26.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones27.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones28.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones29.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones30.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones31.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones32.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones33.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones34.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones35.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones36.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones37.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+        <div class="collage-item reveal"><img src="images/clientesopiniones/clientesopiniones38.jpeg" alt="Opinión de cliente" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="collageModal" class="collage-modal">
+    <div class="collage-modal-backdrop"></div>
+    <div class="collage-modal-content">
+      <button class="collage-modal-close" aria-label="Cerrar">&times;</button>
+      <img id="collageModalImg" src="" alt="">
     </div>
   </div>
 
@@ -387,12 +418,12 @@
   <script src="js/app.js"></script>
   <script>
     (function() {
-      const modal = document.getElementById('streamerModal');
-      const modalImg = document.getElementById('streamerModalImg');
-      const closeBtn = modal.querySelector('.streamer-modal-close');
-      const backdrop = modal.querySelector('.streamer-modal-backdrop');
+      const modal = document.getElementById('collageModal');
+      const modalImg = document.getElementById('collageModalImg');
+      const closeBtn = modal.querySelector('.collage-modal-close');
+      const backdrop = modal.querySelector('.collage-modal-backdrop');
 
-      document.querySelectorAll('.streamer-card img').forEach(img => {
+      document.querySelectorAll('.collage-item img').forEach(img => {
         img.addEventListener('click', () => {
           modalImg.src = img.src;
           modalImg.alt = img.alt;

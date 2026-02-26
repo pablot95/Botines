@@ -23,7 +23,7 @@ const Cart = {
       items.push({
         id: product.id,
         name: product.name,
-        brand: product.brand,
+        category: product.category,
         price: product.price,
         size: product.size,
         image: product.image,
@@ -106,7 +106,7 @@ const Cart = {
         <img src="${item.image}" alt="${item.name}" width="70" height="70">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-detail">${item.brand} &middot; Talle: ${item.size}</div>
+          <div class="cart-item-detail">${item.category ? ({'f11':'Fútbol 11','f5':'Fútbol 5','futsal':'Futsal','adultos':'Adultos','kids':'Kids'}[item.category] || item.category) : ''} &middot; Talle: ${item.size}</div>
           <div class="cart-item-price">${this.formatPrice(item.price)}</div>
           <div class="cart-item-qty">
             <button type="button" data-action="minus" data-id="${item.id}" data-size="${item.size}">−</button>

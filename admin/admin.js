@@ -132,10 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
     let id = document.getElementById('productId').value;
     let name = document.getElementById('pName').value.trim();
-    let brand = document.getElementById('pBrand').value;
-    let type = document.getElementById('pType').value;
     let category = document.getElementById('pCategory').value;
     let price = parseInt(document.getElementById('pPrice').value);
+    let stock = parseInt(document.getElementById('pStock').value) || 0;
     let featured = document.getElementById('pFeatured').checked;
     let description = document.getElementById('pDescription').value.trim();
 
@@ -161,10 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let productData = {
       name,
-      brand,
-      type,
       category,
       price,
+      stock,
       featured,
       description,
       sizes: selectedSizes,
@@ -218,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tr.innerHTML = `
           <td><img src="${imgSrc}" alt="${p.name}"></td>
           <td>${p.name} <small style="color:#999;font-weight:400">#${p.productCode || '—'}</small></td>
-          <td>${p.brand || ''}</td>
-          <td>${p.type === 'f11' ? 'Fútbol 11' : 'Fútbol 5'}</td>
+          <td>${p.category === 'f11' ? 'Fútbol 11' : p.category === 'f5' ? 'Fútbol 5' : p.category === 'futsal' ? 'Futsal' : p.category === 'adultos' ? 'Adultos' : p.category === 'kids' ? 'Kids' : (p.category || '')}</td>
           <td>${formatPrice(p.price)}</td>
+          <td><span class="badge-stock ${(p.stock || 0) > 0 ? 'in-stock' : 'no-stock'}">${p.stock || 0}</span></td>
           <td>${p.featured ? '<span class="badge-featured">Sí</span>' : 'No'}</td>
           <td>
             <div class="actions-cell">
@@ -249,10 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
       modalTitle.textContent = 'Editar producto';
       document.getElementById('productId').value = id;
       document.getElementById('pName').value = p.name || '';
-      document.getElementById('pBrand').value = p.brand || '';
-      document.getElementById('pType').value = p.type || '';
       document.getElementById('pCategory').value = p.category || '';
       document.getElementById('pPrice').value = p.price || 0;
+      document.getElementById('pStock').value = p.stock || 0;
       document.getElementById('pFeatured').checked = p.featured || false;
       document.getElementById('pDescription').value = p.description || '';
 
@@ -363,10 +360,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4 style="font-family:var(--font-heading);font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:10px;">Productos</h4>
             <table>
               <thead>
-                <tr><th>Producto</th><th>Marca</th><th>Talle</th><th>Cant.</th><th>Precio</th></tr>
+                <tr><th>Producto</th><th>Categoría</th><th>Talle</th><th>Cant.</th><th>Precio</th></tr>
               </thead>
               <tbody>
-                ${o.items.map(i => `<tr><td>${i.name}</td><td>${i.brand}</td><td>${i.size}</td><td>${i.qty}</td><td>${formatPrice(i.price * i.qty)}</td></tr>`).join('')}
+                ${o.items.map(i => `<tr><td>${i.name}</td><td>${i.category || i.brand || ''}</td><td>${i.size}</td><td>${i.qty}</td><td>${formatPrice(i.price * i.qty)}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>

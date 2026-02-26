@@ -70,9 +70,9 @@
               <tr>
                 <th>Imagen</th>
                 <th>Nombre</th>
-                <th>Marca</th>
-                <th>Tipo</th>
+                <th>Categoría</th>
                 <th class="precio">Precio</th>
+                <th>Stock</th>
                 <th>Destacado</th>
                 <th>Acciones</th>
               </tr>
@@ -118,30 +118,12 @@
               <input type="text" id="pName">
             </div>
             <div class="admin-form-group">
-              <label for="pBrand">Marca</label>
-              <select id="pBrand" required>
-                <option value="">Seleccionar</option>
-                <option value="Nike">Nike</option>
-                <option value="Adidas">Adidas</option>
-                <option value="Puma">Puma</option>
-                <option value="Mizuno">Mizuno</option>
-                <option value="Joma">Joma</option>
-              </select>
-            </div>
-          </div>
-          <div class="admin-form-row">
-            <div class="admin-form-group">
-              <label for="pType">Tipo</label>
-              <select id="pType" required>
-                <option value="">Seleccionar</option>
-                <option value="f11">Fútbol 11</option>
-                <option value="f5">Fútbol 5 / Futsal</option>
-              </select>
-            </div>
-            <div class="admin-form-group">
               <label for="pCategory">Categoría</label>
               <select id="pCategory" required>
                 <option value="">Seleccionar</option>
+                <option value="f11">Fútbol 11</option>
+                <option value="f5">Fútbol 5</option>
+                <option value="futsal">Futsal</option>
                 <option value="adultos">Adultos</option>
                 <option value="kids">Kids</option>
               </select>
@@ -152,6 +134,12 @@
               <label for="pPrice">Precio</label>
               <input type="number" id="pPrice" required min="0" step="1000">
             </div>
+            <div class="admin-form-group">
+              <label for="pStock">Stock</label>
+              <input type="number" id="pStock" required min="0" step="1" value="0">
+            </div>
+          </div>
+          <div class="admin-form-row">
             <div class="admin-form-group">
               <label>
                 <input type="checkbox" id="pFeatured" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;accent-color:#c9a84c">

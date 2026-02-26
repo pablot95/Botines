@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sizesText = `Talles: ${argSizes}`;
     }
 
-    let typeText = product.type === 'f11' ? 'Fútbol 11' : product.type === 'f5' ? 'Fútbol 5 / Futsal' : '';
+    let typeText = product.category === 'f11' ? 'Fútbol 11' : product.category === 'f5' ? 'Fútbol 5' : product.category === 'futsal' ? 'Futsal' : product.category === 'adultos' ? 'Adultos' : product.category === 'kids' ? 'Kids' : '';
 
     let codeText = product.productCode ? `<span class="product-card-code">#${product.productCode}</span>` : '';
 
@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="product-card-img">
         <img src="${imgSrc}" alt="${product.name}" width="300" height="300" loading="lazy">
         ${product.featured ? '<span class="product-card-badge">Destacado</span>' : ''}
+        ${(product.stock || 0) <= 0 ? '<span class="product-card-badge badge-no-stock">Sin stock</span>' : ''}
       </div>
       <div class="product-card-body">
         ${typeText || codeText ? `<div class="product-card-type">${typeText}${codeText}</div>` : ''}
@@ -171,41 +172,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let hasMore = true;
 
     const params = new URLSearchParams(window.location.search);
-    let initialBrand = params.get('marca');
     let initialCat = params.get('categoria');
     let initialSearch = params.get('buscar');
 
-    if (initialBrand && categoryTitle) {
-      let brandName = initialBrand.charAt(0).toUpperCase() + initialBrand.slice(1);
-      categoryTitle.textContent = 'Botines ';
-      if (breadcrumbCurrent) breadcrumbCurrent.textContent = brandName;
-      let checkbox = document.querySelector(`input[name="marca"][value="${initialBrand}"]`);
-      if (checkbox) checkbox.checked = true;
-    }
-
-    if (initialCat && categoryTitle) {
-      let catName = initialCat.charAt(0).toUpperCase() + initialCat.slice(1);
-      categoryTitle.textContent = catName;
+    if (initialCat) {
+      let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', adultos: 'Adultos', kids: 'Kids' };
+      let catName = catNames[initialCat] || initialCat.charAt(0).toUpperCase() + initialCat.slice(1);
       if (breadcrumbCurrent) breadcrumbCurrent.textContent = catName;
       let checkbox = document.querySelector(`input[name="categoria"][value="${initialCat}"]`);
       if (checkbox) checkbox.checked = true;
     }
 
-    if (initialSearch && categoryTitle) {
-      categoryTitle.textContent = 'Resultados: "' + initialSearch + '"';
+    if (initialSearch) {
       if (breadcrumbCurrent) breadcrumbCurrent.textContent = 'Búsqueda';
     }
 
     function getActiveFilters() {
       let filters = {};
-      let marcas = Array.from(document.querySelectorAll('input[name="marca"]:checked')).map(c => c.value);
       let categorias = Array.from(document.querySelectorAll('input[name="categoria"]:checked')).map(c => c.value);
-      let tipos = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(c => c.value);
       let talles = Array.from(document.querySelectorAll('input[name="talle"]:checked')).map(c => c.value);
       let priceRange = document.getElementById('priceRange');
-      if (marcas.length) filters.marcas = marcas;
       if (categorias.length) filters.categorias = categorias;
-      if (tipos.length) filters.tipos = tipos;
       if (talles.length) filters.talles = talles;
       if (priceRange) filters.maxPrice = parseInt(priceRange.value);
       if (initialSearch) filters.search = initialSearch.toLowerCase();
@@ -213,16 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function filterProduct(product, filters) {
-      if (filters.marcas && !filters.marcas.includes((product.brand || '').toLowerCase())) return false;
       if (filters.categorias && !filters.categorias.includes((product.category || '').toLowerCase())) return false;
-      if (filters.tipos && !filters.tipos.includes((product.type || '').toLowerCase())) return false;
       if (filters.talles) {
         let productSizes = (product.sizes || []).map(s => String(s.arg || s));
         if (!filters.talles.some(t => productSizes.includes(t))) return false;
       }
       if (filters.maxPrice && product.price > filters.maxPrice) return false;
       if (filters.search) {
-        let searchable = ((product.name || '') + ' ' + (product.brand || '') + ' ' + (product.category || '')).toLowerCase();
+        let searchable = ((product.name || '') + ' ' + (product.category || '')).toLowerCase();
         if (!searchable.includes(filters.search)) return false;
       }
       return true;
@@ -331,9 +316,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.title = product.name + ' | Botines FV';
         document.getElementById('productName').textContent = product.name;
-        document.getElementById('productBrand').textContent = product.brand || '';
+        let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', adultos: 'Adultos', kids: 'Kids' };
+        document.getElementById('productBrand').textContent = catNames[product.category] || product.category || '';
         document.getElementById('productPrice').textContent = formatPrice(product.price);
         document.getElementById('breadcrumbProduct').textContent = product.name;
+
+        let stockInfo = document.getElementById('stockInfo');
+        let productStock = product.stock || 0;
+        if (stockInfo) {
+          if (productStock > 0) {
+            stockInfo.innerHTML = `<span class="stock-available">Stock disponible: ${productStock} unidad${productStock !== 1 ? 'es' : ''}</span>`;
+          } else {
+            stockInfo.innerHTML = `<span class="stock-out">Sin stock</span>`;
+          }
+        }
 
         let mainImg = document.getElementById('productMainImg');
         if (product.images && product.images.length > 0) {
@@ -382,15 +378,24 @@ document.addEventListener('DOMContentLoaded', () => {
         let btnBuyNow = document.getElementById('btnBuyNow');
 
         if (btnAddCart) {
+          if (productStock <= 0) {
+            btnAddCart.disabled = true;
+            btnAddCart.textContent = 'Sin stock';
+            btnAddCart.classList.add('btn-disabled');
+          }
           btnAddCart.addEventListener('click', () => {
             if (!selectedSize) {
               Cart.showToast('Seleccioná un talle');
               return;
             }
+            if (productStock <= 0) {
+              Cart.showToast('Producto sin stock');
+              return;
+            }
             Cart.addItem({
               id: product.id,
               name: product.name,
-              brand: product.brand,
+              category: product.category,
               price: product.price,
               size: selectedSize,
               image: (product.images && product.images[0]) || 'images/logo.jpeg',
@@ -400,15 +405,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (btnBuyNow) {
+          if (productStock <= 0) {
+            btnBuyNow.disabled = true;
+            btnBuyNow.textContent = 'Sin stock';
+            btnBuyNow.classList.add('btn-disabled');
+          }
           btnBuyNow.addEventListener('click', () => {
             if (!selectedSize) {
               Cart.showToast('Seleccioná un talle');
               return;
             }
+            if (productStock <= 0) {
+              Cart.showToast('Producto sin stock');
+              return;
+            }
             Cart.addItem({
               id: product.id,
               name: product.name,
-              brand: product.brand,
+              category: product.category,
               price: product.price,
               size: selectedSize,
               image: (product.images && product.images[0]) || 'images/logo.jpeg',
@@ -724,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
           items: items.map(i => ({
             productId: i.id,
             name: i.name,
-            brand: i.brand,
+            category: i.category,
             price: i.price,
             size: i.size,
             qty: i.qty

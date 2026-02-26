@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogo de Botines | Botines FV</title>
-  <meta name="description" content="Explorá nuestro catálogo completo de botines de fútbol. Filtrá por marca, talle y precio. Nike, Adidas, Puma, Mizuno, Joma.">
+  <meta name="description" content="Explorá nuestro catálogo completo de botines de fútbol. Filtrá por categoría, talle y precio.">
   <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,16 +33,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div class="nav-dropdown">
-            <h4>Marcas</h4>
-            <ul>
-              <li><a href="category.html?marca=nike">Nike</a></li>
-              <li><a href="category.html?marca=adidas">Adidas</a></li>
-              <li><a href="category.html?marca=puma">Puma</a></li>
-              <li><a href="category.html?marca=mizuno">Mizuno</a></li>
-              <li><a href="category.html?marca=joma">Joma</a></li>
-            </ul>
             <h4>Categorías</h4>
             <ul>
+              <li><a href="category.html">Todos los botines</a></li>
+              <li><a href="category.html?categoria=f11">Fútbol 11</a></li>
+              <li><a href="category.html?categoria=f5">Fútbol 5</a></li>
+              <li><a href="category.html?categoria=futsal">Futsal</a></li>
               <li><a href="category.html?categoria=adultos">Adultos</a></li>
               <li><a href="category.html?categoria=kids">Kids</a></li>
             </ul>
@@ -68,13 +64,10 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
     </div>
-    <h4>Marcas</h4>
-    <a href="category.html?marca=nike">Nike</a>
-    <a href="category.html?marca=adidas">Adidas</a>
-    <a href="category.html?marca=puma">Puma</a>
-    <a href="category.html?marca=mizuno">Mizuno</a>
-    <a href="category.html?marca=joma">Joma</a>
     <h4>Categorías</h4>
+    <a href="category.html?categoria=f11">Fútbol 11</a>
+    <a href="category.html?categoria=f5">Fútbol 5</a>
+    <a href="category.html?categoria=futsal">Futsal</a>
     <a href="category.html?categoria=adultos">Adultos</a>
     <a href="category.html?categoria=kids">Kids</a>
     <h4>Páginas</h4>
@@ -98,22 +91,12 @@
       </button>
       <aside class="filters-sidebar" id="filtersSidebar">
         <div class="filter-group">
-          <h4>Marca</h4>
-          <label><input type="checkbox" name="marca" value="nike"> Nike</label>
-          <label><input type="checkbox" name="marca" value="adidas"> Adidas</label>
-          <label><input type="checkbox" name="marca" value="puma"> Puma</label>
-          <label><input type="checkbox" name="marca" value="mizuno"> Mizuno</label>
-          <label><input type="checkbox" name="marca" value="joma"> Joma</label>
-        </div>
-        <div class="filter-group">
           <h4>Categoría</h4>
+          <label><input type="checkbox" name="categoria" value="f11"> Fútbol 11</label>
+          <label><input type="checkbox" name="categoria" value="f5"> Fútbol 5</label>
+          <label><input type="checkbox" name="categoria" value="futsal"> Futsal</label>
           <label><input type="checkbox" name="categoria" value="adultos"> Adultos</label>
           <label><input type="checkbox" name="categoria" value="kids"> Kids</label>
-        </div>
-        <div class="filter-group">
-          <h4>Tipo</h4>
-          <label><input type="checkbox" name="tipo" value="f11"> Fútbol 11</label>
-          <label><input type="checkbox" name="tipo" value="f5"> Fútbol 5 / Futsal</label>
         </div>
         <div class="filter-group">
           <h4>Talle (ARG)</h4>
@@ -142,7 +125,7 @@
       </aside>
       <div class="products-area">
         <div class="products-header">
-          <h2 id="categoryTitle">Todos los botines</h2>
+          <h2 id="categoryTitle" style="display:none"></h2>
           <span class="products-count" id="productsCount"></span>
         </div>
         <div class="products-grid" id="productsGrid">
