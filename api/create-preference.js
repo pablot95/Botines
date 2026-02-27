@@ -26,26 +26,27 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'No hay items en el pedido' });
     }
 
-    // Build preference items
+    // Build preference items - ensure unit_price is a Number
     const mpItems = items.map(item => ({
-      title: item.name,
-      quantity: item.qty,
-      unit_price: item.price,
+      title: String(item.name).substring(0, 256),
+      quantity: parseInt(item.qty) || 1,
+      unit_price: parseFloat(item.price) || 0,
       currency_id: 'ARS'
     }));
 
     // Add shipping as an item if applicable
-    if (shipment_cost && shipment_cost > 0) {
+    if (shipment_cost && parseFloat(shipment_cost) > 0) {
       mpItems.push({
-        title: 'Envío por moto',
+        title: 'Envío',
         quantity: 1,
-        unit_price: shipment_cost,
+        unit_price: parseFloat(shipment_cost),
         currency_id: 'ARS'
       });
     }
 
     const baseUrl = back_url || 'https://botinesfv.gokywebs.net';
 
+    // Minimal preference - only required fields
     const preference = {
       items: mpItems,
       back_urls: {
@@ -54,17 +55,12 @@ module.exports = async (req, res) => {
         pending: `${baseUrl}/checkout.html?payment=pending&order=${order_id || ''}`
       },
       auto_return: 'approved',
-      external_reference: order_id || '',
-      statement_descriptor: 'BOTINES FV'
+      external_reference: order_id ? String(order_id) : undefined
     };
 
-    // Only add payer if we have a valid email
-    if (payer && payer.email) {
-      preference.payer = {
-        email: payer.email
-      };
-      if (payer.name) preference.payer.name = payer.name;
-      if (payer.surname) preference.payer.surname = payer.surname;
+    // Only add payer with valid email
+    if (payer && payer.email && payer.email.includes('@')) {
+      preference.payer = { email: payer.email };
     }
 
     // Create preference via MercadoPago API
@@ -94,7 +90,7 @@ module.exports = async (req, res) => {
               reject(new Error(`MP API error ${response.statusCode}: ${body}`));
             }
           } catch (e) {
-            reject(new Error('Error parsing MP response'));
+            reject(new Error('Error parsing MP response: ' + body));
           }
         });
       });
