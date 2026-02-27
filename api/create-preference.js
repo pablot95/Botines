@@ -44,22 +44,10 @@ module.exports = async (req, res) => {
       });
     }
 
-    const baseUrl = back_url || 'https://botinesfv.vercel.app';
+    const baseUrl = back_url || 'https://botinesfv.gokywebs.net';
 
     const preference = {
       items: mpItems,
-      payer: {
-        name: payer.name || '',
-        surname: payer.surname || '',
-        email: payer.email || '',
-        phone: {
-          number: payer.phone || ''
-        },
-        address: {
-          street_name: payer.address || '',
-          zip_code: payer.zip_code || ''
-        }
-      },
       back_urls: {
         success: `${baseUrl}/checkout.html?payment=success&order=${order_id || ''}`,
         failure: `${baseUrl}/checkout.html?payment=failure&order=${order_id || ''}`,
@@ -67,9 +55,17 @@ module.exports = async (req, res) => {
       },
       auto_return: 'approved',
       external_reference: order_id || '',
-      statement_descriptor: 'BOTINES FV',
-      notification_url: `${baseUrl}/api/mp-webhook`
+      statement_descriptor: 'BOTINES FV'
     };
+
+    // Only add payer if we have a valid email
+    if (payer && payer.email) {
+      preference.payer = {
+        email: payer.email
+      };
+      if (payer.name) preference.payer.name = payer.name;
+      if (payer.surname) preference.payer.surname = payer.surname;
+    }
 
     // Create preference via MercadoPago API
     const data = JSON.stringify(preference);
