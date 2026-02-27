@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NUNCA commitear)
+.env
+.env.local
+.env.production
+
+# Vercel
+.vercel/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+*.swp
+*.swo

@@ -1,4 +1,4 @@
-const ALL_SIZES = [
+﻿const ALL_SIZES = [
   { us: '6.5', cm: '24.5', eur: '39', arg: '38' },
   { us: '7', cm: '25', eur: '40', arg: '39' },
   { us: '7.5', cm: '25.5', eur: '40.5', arg: '39.5' },
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tr.innerHTML = `
           <td><img src="${imgSrc}" alt="${p.name}"></td>
           <td>${p.name} <small style="color:#999;font-weight:400">#${p.productCode || '—'}</small></td>
-          <td>${p.category === 'f11' ? 'Fútbol 11' : p.category === 'f5' ? 'Fútbol 5' : p.category === 'futsal' ? 'Futsal' : p.category === 'adultos' ? 'Adultos' : p.category === 'kids' ? 'Kids' : (p.category || '')}</td>
+          <td>${p.category === 'f11' ? 'Fútbol 11' : p.category === 'f5' ? 'Fútbol 5' : p.category === 'futsal' ? 'Futsal' : p.category === 'mixtos' ? 'Mixtos' : p.category === 'kids' ? 'Kids' : (p.category || '')}</td>
           <td>${formatPrice(p.price)}</td>
           <td><span class="badge-stock ${(p.stock || 0) > 0 ? 'in-stock' : 'no-stock'}">${p.stock || 0}</span></td>
           <td>${p.featured ? '<span class="badge-featured">Sí</span>' : 'No'}</td>

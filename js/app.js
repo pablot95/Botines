@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
 
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sizesText = `Talles: ${argSizes}`;
     }
 
-    let typeText = product.category === 'f11' ? 'Fútbol 11' : product.category === 'f5' ? 'Fútbol 5' : product.category === 'futsal' ? 'Futsal' : product.category === 'adultos' ? 'Adultos' : product.category === 'kids' ? 'Kids' : '';
+    let typeText = product.category === 'f11' ? 'Fútbol 11' : product.category === 'f5' ? 'Fútbol 5' : product.category === 'futsal' ? 'Futsal' : product.category === 'mixtos' ? 'Mixtos' : product.category === 'kids' ? 'Kids' : '';
 
     let codeText = product.productCode ? `<span class="product-card-code">#${product.productCode}</span>` : '';
 
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let initialSearch = params.get('buscar');
 
     if (initialCat) {
-      let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', adultos: 'Adultos', kids: 'Kids' };
+      let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', mixtos: 'Mixtos', kids: 'Kids' };
       let catName = catNames[initialCat] || initialCat.charAt(0).toUpperCase() + initialCat.slice(1);
       if (breadcrumbCurrent) breadcrumbCurrent.textContent = catName;
       let checkbox = document.querySelector(`input[name="categoria"][value="${initialCat}"]`);
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.title = product.name + ' | Botines FV';
         document.getElementById('productName').textContent = product.name;
-        let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', adultos: 'Adultos', kids: 'Kids' };
+        let catNames = { f11: 'Fútbol 11', f5: 'Fútbol 5', futsal: 'Futsal', mixtos: 'Mixtos', kids: 'Kids' };
         document.getElementById('productBrand').textContent = catNames[product.category] || product.category || '';
         document.getElementById('productPrice').textContent = formatPrice(product.price);
         document.getElementById('breadcrumbProduct').textContent = product.name;
@@ -453,12 +453,99 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ── Manejo de retorno de MercadoPago ──
+  (function handleMPReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const paymentCollection = params.get('collection_status');
+    const orderId = params.get('order') || localStorage.getItem('mp_pending_order');
+
+    // Detectar retorno de MP (puede venir como ?payment=success o ?collection_status=approved)
+    const isSuccess = paymentStatus === 'success' || paymentCollection === 'approved';
+    const isFailure = paymentStatus === 'failure' || paymentCollection === 'rejected';
+    const isPending = paymentStatus === 'pending' || paymentCollection === 'pending';
+
+    if (!isSuccess && !isFailure && !isPending) return;
+
+    const msgContainer = document.getElementById('paymentMsg');
+    const checkoutPage = document.querySelector('.checkout-page');
+    if (!checkoutPage) return;
+
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+    localStorage.removeItem('mp_pending_order');
+
+    if (isSuccess) {
+      checkoutPage.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+          <h2 style="color:var(--gold);margin-bottom:12px;">¡Pago confirmado!</h2>
+          <p style="color:var(--light);margin-bottom:8px;">Tu pago fue procesado correctamente por Mercado Pago.</p>
+          ${orderId ? `<p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>` : ''}
+          <p style="color:var(--light);margin-bottom:24px;">Te enviaremos un email con los detalles. También podés coordinar el envío por WhatsApp.</p>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <a href="https://wa.me/5491132053335?text=${encodeURIComponent('Hola! Acabo de pagar mi pedido' + (orderId ? ' #' + orderId : '') + ' por Mercado Pago. Quiero coordinar el envío.')}" 
+               class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">
+              Coordinar envío por WhatsApp
+            </a>
+            <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
+          </div>
+        </div>
+      `;
+      // Send email notification for the successful payment
+      if (orderId && typeof emailjs !== 'undefined') {
+        try {
+          const EMAILJS_SERVICE = 'service_78p0pvo';
+          const EMAILJS_TEMPLATE = 'template_djhcrkr';
+          const EMAILJS_PUBLIC_KEY = 'sW6xyFcoaPmem-1k6';
+          emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (e) { /* silent */ }
+      }
+      // Update order status in Firebase
+      if (orderId) {
+        try {
+          db.collection('orders').doc(orderId).update({
+            status: 'paid',
+            paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+            paymentGateway: 'mercadopago'
+          });
+        } catch (e) { console.warn('Could not update order:', e); }
+      }
+    } else if (isFailure) {
+      checkoutPage.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:3rem;margin-bottom:16px;">❌</div>
+          <h2 style="color:#e74c3c;margin-bottom:12px;">El pago no se pudo procesar</h2>
+          <p style="color:var(--light);margin-bottom:24px;">Hubo un problema con tu pago. Podés intentar de nuevo o elegir otro método de pago.</p>
+          <a href="checkout.html" class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">Intentar de nuevo</a>
+        </div>
+      `;
+    } else if (isPending) {
+      checkoutPage.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+          <h2 style="color:var(--gold);margin-bottom:12px;">Pago pendiente</h2>
+          <p style="color:var(--light);margin-bottom:8px;">Tu pago está siendo procesado. Te notificaremos cuando se confirme.</p>
+          ${orderId ? `<p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>` : ''}
+          <p style="color:var(--light);margin-bottom:24px;">Si pagaste con Rapipago o Pago Fácil, puede demorar algunas horas.</p>
+          <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
+        </div>
+      `;
+      if (orderId) {
+        try {
+          db.collection('orders').doc(orderId).update({ status: 'payment_pending' });
+        } catch (e) { /* silent */ }
+      }
+    }
+  })();
+
   const checkoutItems = document.getElementById('checkoutItems');
   if (checkoutItems) {
     const WSP_NUMBER = '5491132053335';
-    const EMAILJS_SERVICE = 'YOUR_SERVICE_ID';   // ← reemplazar
-    const EMAILJS_TEMPLATE = 'YOUR_TEMPLATE_ID'; // ← reemplazar
-    const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // ← reemplazar
+    const EMAILJS_SERVICE = 'service_78p0pvo';
+    const EMAILJS_TEMPLATE = 'template_djhcrkr';
+    const EMAILJS_PUBLIC_KEY = 'sW6xyFcoaPmem-1k6';
+    emailjs.init(EMAILJS_PUBLIC_KEY);
 
     let items = Cart.getItems();
     let subtotal = Cart.getTotal();
@@ -668,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return text;
     }
 
-    function buildEmailHTML() {
+    function buildEmailParams(orderId) {
       let nombre = document.getElementById('chkNombre').value.trim();
       let apellido = document.getElementById('chkApellido').value.trim();
       let email = document.getElementById('chkEmail').value.trim();
@@ -677,31 +764,46 @@ document.addEventListener('DOMContentLoaded', () => {
       let ciudad = document.getElementById('chkCiudad').value.trim();
       let provincia = document.getElementById('chkProvincia').value.trim();
       let cp = document.getElementById('chkCP').value.trim();
+      let mensaje = document.getElementById('chkMensaje').value.trim();
       let total = subtotal + currentShipping;
-      let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) : 'A coordinar';
+      let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) + ' (moto)' : 'A coordinar';
+      let zonaText = currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona';
+      let payText = currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia bancaria' : 'Efectivo';
 
-      let itemsHTML = items.map(item => {
-        let codeTag = item.productCode ? `#${item.productCode} ` : '';
-        return `${codeTag}${item.name} — Talle ${item.size} (x${item.qty}) — ${Cart.formatPrice(item.price * item.qty)}`;
-      }).join('\n');
+      let now = new Date();
+      let fecha = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      let hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+      let itemsText = items.map((item, i) => {
+        let codeTag = item.productCode ? `#${item.productCode} - ` : '';
+        return `${i + 1}. ${codeTag}${item.name}\n   Talle: ${item.size} | Cantidad: ${item.qty} | Precio: ${Cart.formatPrice(item.price * item.qty)}`;
+      }).join('\n\n');
+
+      let totalQty = items.reduce((sum, i) => sum + i.qty, 0);
 
       return {
+        order_number: orderId || '—',
+        order_date: `${fecha} a las ${hora}`,
         customer_name: `${nombre} ${apellido}`,
         customer_email: email,
         customer_phone: telefono,
-        customer_address: `${direccion}, ${ciudad}, ${provincia} (${cp})`,
-        customer_zone: currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona',
-        order_items: itemsHTML,
+        customer_address: direccion,
+        customer_city: `${ciudad}, ${provincia}`,
+        customer_cp: cp,
+        customer_zone: zonaText,
+        customer_message: mensaje || 'Sin mensaje',
+        order_items: itemsText,
+        order_qty: totalQty.toString(),
         order_subtotal: Cart.formatPrice(subtotal),
         order_shipping: shippingText,
         order_total: Cart.formatPrice(total),
-        payment_method: currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia' : 'Efectivo'
+        payment_method: payText
       };
     }
 
-    function sendEmailNotification() {
+    function sendEmailNotification(orderId) {
       try {
-        emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, buildEmailHTML(), EMAILJS_PUBLIC_KEY);
+        emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, buildEmailParams(orderId));
       } catch (e) {
         console.warn('EmailJS error:', e);
       }
@@ -766,22 +868,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
         db.collection('orders').add(orderData).then(docRef => {
           if (currentPayment === 'mercadopago') {
-            Cart.clear();
-            if (currentZona === 'otra') {
-              
-              Cart.showToast('Orden creada. Te redirigimos a WhatsApp para coordinar el envío.');
-              btnPay.textContent = 'Compra completada';
-              alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nLuego te redirigiremos a WhatsApp para coordinar el envío.');
-              setTimeout(() => { redirectToWhatsApp(true); }, 500);
-            } else {
-              
-              Cart.showToast('Orden creada correctamente');
-              alert('Orden creada con éxito. Nro: ' + docRef.id + '\n\nAquí se redirecionaría a Mercado Pago para completar el pago.\nEl email se enviará cuando se confirme el pago.');
+            // Crear preferencia de pago en MercadoPago via serverless function
+            const baseUrl = window.location.origin;
+            fetch('/api/create-preference', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                items: items.map(i => ({ name: i.name + ' - Talle ' + i.size, qty: i.qty, price: i.price })),
+                payer: {
+                  name: document.getElementById('chkNombre').value.trim(),
+                  surname: document.getElementById('chkApellido').value.trim(),
+                  email: document.getElementById('chkEmail').value.trim(),
+                  phone: document.getElementById('chkTelefono').value.trim(),
+                  address: document.getElementById('chkDireccion').value.trim(),
+                  zip_code: document.getElementById('chkCP').value.trim()
+                },
+                shipment_cost: currentShipping,
+                order_id: docRef.id,
+                back_url: baseUrl
+              })
+            })
+            .then(r => r.json())
+            .then(data => {
+              if (data.init_point) {
+                // Guardar order id para cuando vuelva de MP
+                localStorage.setItem('mp_pending_order', docRef.id);
+                Cart.clear();
+                // Redirigir a MercadoPago
+                window.location.href = data.init_point;
+              } else {
+                throw new Error(data.error || 'No se pudo crear el pago');
+              }
+            })
+            .catch(err => {
+              console.error('MP error:', err);
               btnPay.textContent = 'Confirmar y pagar';
               btnPay.classList.add('enabled');
-            }
+              Cart.showToast('Error al conectar con Mercado Pago. Intentá de nuevo.');
+            });
           } else {
-            sendEmailNotification();
+            sendEmailNotification(docRef.id);
             Cart.clear();
             Cart.showToast('¡Pedido enviado! Te redirigimos a WhatsApp.');
             btnPay.textContent = 'Compra completada';
