@@ -115,7 +115,10 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error creating preference:', error);
-    return res.status(500).json({ error: 'Error al crear la preferencia de pago' });
+    console.error('Error creating preference:', error.message || error);
+    return res.status(500).json({ 
+      error: 'Error al crear la preferencia de pago',
+      detail: error.message || 'Unknown error'
+    });
   }
 };

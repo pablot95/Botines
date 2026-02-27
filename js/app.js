@@ -897,14 +897,14 @@
                 // Redirigir a MercadoPago
                 window.location.href = data.init_point;
               } else {
-                throw new Error(data.error || 'No se pudo crear el pago');
+                throw new Error(data.detail || data.error || 'No se pudo crear el pago');
               }
             })
             .catch(err => {
               console.error('MP error:', err);
               btnPay.textContent = 'Confirmar y pagar';
               btnPay.classList.add('enabled');
-              Cart.showToast('Error al conectar con Mercado Pago. Intentá de nuevo.');
+              Cart.showToast('Error de Mercado Pago: ' + err.message);
             });
           } else {
             sendEmailNotification(docRef.id);
