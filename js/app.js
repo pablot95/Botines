@@ -499,7 +499,13 @@
           const EMAILJS_TEMPLATE = 'template_djhcrkr';
           const EMAILJS_PUBLIC_KEY = 'sW6xyFcoaPmem-1k6';
           emailjs.init(EMAILJS_PUBLIC_KEY);
-        } catch (e) { /* silent */ }
+          const savedEmailData = localStorage.getItem('mp_pending_email');
+          if (savedEmailData) {
+            const emailParams = JSON.parse(savedEmailData);
+            emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, emailParams);
+            localStorage.removeItem('mp_pending_email');
+          }
+        } catch (e) { console.warn('EmailJS error:', e); }
       }
       // Update order status in Firebase
       if (orderId) {
@@ -891,6 +897,11 @@
             .then(r => r.json())
             .then(data => {
               if (data.init_point) {
+                // Guardar datos del email ANTES de limpiar el carrito
+                try {
+                  const emailParams = buildEmailParams(docRef.id);
+                  localStorage.setItem('mp_pending_email', JSON.stringify(emailParams));
+                } catch(e) { /* silent */ }
                 // Guardar order id para cuando vuelva de MP
                 localStorage.setItem('mp_pending_order', docRef.id);
                 Cart.clear();
