@@ -482,7 +482,7 @@
           <h2 style="color:var(--gold);margin-bottom:12px;">¡Pago confirmado!</h2>
           <p style="color:var(--light);margin-bottom:8px;">Tu pago fue procesado correctamente por Mercado Pago.</p>
           ${orderId ? `<p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>` : ''}
-          <p style="color:var(--light);margin-bottom:24px;">Te enviaremos un email con los detalles. También podés coordinar el envío por WhatsApp.</p>
+          <p style="color:var(--light);margin-bottom:24px;">Podés coordinar el envío por WhatsApp.</p>
           <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
             <a href="https://wa.me/5491132053335?text=${encodeURIComponent('Hola! Acabo de pagar mi pedido' + (orderId ? ' #' + orderId : '') + ' por Mercado Pago. Quiero coordinar el envío.')}" 
                class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">
