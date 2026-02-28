@@ -117,7 +117,10 @@
     let imgSrc = (product.images && product.images.length > 0) ? product.images[0] : 'images/logo.jpeg';
     let sizesText = '';
     if (product.sizes && product.sizes.length > 0) {
-      let argSizes = product.sizes.map(s => s.arg || s).join(', ');
+      let argSizes = product.sizes.map(s => {
+        if (s.arg && s.us) return `${s.arg} (US ${s.us})`;
+        return s.arg || s;
+      }).join(', ');
       sizesText = `Talles: ${argSizes}`;
     }
 
@@ -129,7 +132,7 @@
       <div class="product-card-img">
         <img src="${imgSrc}" alt="${product.name}" width="300" height="300" loading="lazy">
         ${product.featured ? '<span class="product-card-badge">Destacado</span>' : ''}
-        ${(product.stock || 0) <= 0 ? '<span class="product-card-badge badge-no-stock">Sin stock</span>' : ''}
+        ${(product.stock || 0) <= 0 ? '<span class="product-card-badge badge-no-stock">Agotado</span>' : ''}
       </div>
       <div class="product-card-body">
         ${typeText || codeText ? `<div class="product-card-type">${typeText}${codeText}</div>` : ''}
@@ -327,7 +330,7 @@
           if (productStock > 0) {
             stockInfo.innerHTML = `<span class="stock-available">Stock disponible: ${productStock} unidad${productStock !== 1 ? 'es' : ''}</span>`;
           } else {
-            stockInfo.innerHTML = `<span class="stock-out">Sin stock</span>`;
+            stockInfo.innerHTML = `<span class="stock-out">Agotado</span>`;
           }
         }
 
@@ -360,7 +363,7 @@
           let btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'size-btn';
-          btn.textContent = size.arg;
+          btn.innerHTML = `${size.arg}<br><small class="size-btn-us">US ${size.us}</small>`;
           let isAvailable = productSizeArgs.includes(size.arg) || productSizeArgs.includes(size.arg.replace('½', '.5'));
           if (!isAvailable && productSizeArgs.length > 0) {
             btn.classList.add('unavailable');
@@ -380,7 +383,7 @@
         if (btnAddCart) {
           if (productStock <= 0) {
             btnAddCart.disabled = true;
-            btnAddCart.textContent = 'Sin stock';
+            btnAddCart.textContent = 'Agotado';
             btnAddCart.classList.add('btn-disabled');
           }
           btnAddCart.addEventListener('click', () => {
@@ -389,7 +392,7 @@
               return;
             }
             if (productStock <= 0) {
-              Cart.showToast('Producto sin stock');
+              Cart.showToast('Producto agotado');
               return;
             }
             Cart.addItem({
@@ -407,7 +410,7 @@
         if (btnBuyNow) {
           if (productStock <= 0) {
             btnBuyNow.disabled = true;
-            btnBuyNow.textContent = 'Sin stock';
+            btnBuyNow.textContent = 'Agotado';
             btnBuyNow.classList.add('btn-disabled');
           }
           btnBuyNow.addEventListener('click', () => {
@@ -416,7 +419,7 @@
               return;
             }
             if (productStock <= 0) {
-              Cart.showToast('Producto sin stock');
+              Cart.showToast('Producto agotado');
               return;
             }
             Cart.addItem({
@@ -568,7 +571,7 @@
       let div = document.createElement('div');
       div.className = 'checkout-item';
       div.innerHTML = `
-        <span class="checkout-item-name">${item.name} (x${item.qty}) - Talle ${item.size}</span>
+        <span class="checkout-item-name">${item.name} (x${item.qty}) - Talle ${item.size}${(typeof US_SIZES_MAP !== 'undefined' && US_SIZES_MAP[String(item.size)]) ? ' (US ' + US_SIZES_MAP[String(item.size)] + ')' : ''}</span>
         <span class="checkout-item-price">${Cart.formatPrice(item.price * item.qty)}</span>
       `;
       checkoutItems.appendChild(div);

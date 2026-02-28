@@ -1,4 +1,10 @@
-﻿const Cart = {
+﻿const US_SIZES_MAP = {
+  '38': '6.5', '39': '7', '39.5': '7.5', '40': '8',
+  '41': '8.5', '41.5': '9', '42': '9.5', '43': '10',
+  '43.5': '10.5', '44': '11', '44.5': '11.5', '45': '12'
+};
+
+const Cart = {
   KEY: 'botinesfv_cart',
 
   getItems() {
@@ -106,7 +112,7 @@
         <img src="${item.image}" alt="${item.name}" width="70" height="70">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-detail">${item.category ? ({'f11':'Fútbol 11','f5':'Fútbol 5','futsal':'Futsal','mixtos':'Mixtos','kids':'Kids'}[item.category] || item.category) : ''} &middot; Talle: ${item.size}</div>
+          <div class="cart-item-detail">${item.category ? ({'f11':'Fútbol 11','f5':'Fútbol 5','futsal':'Futsal','mixtos':'Mixtos','kids':'Kids'}[item.category] || item.category) : ''} &middot; Talle: ${item.size}${US_SIZES_MAP[String(item.size)] ? ' (US ' + US_SIZES_MAP[String(item.size)] + ')' : ''}</div>
           <div class="cart-item-price">${this.formatPrice(item.price)}</div>
           <div class="cart-item-qty">
             <button type="button" data-action="minus" data-id="${item.id}" data-size="${item.size}">−</button>
