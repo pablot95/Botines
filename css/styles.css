@@ -673,13 +673,18 @@ input, select, textarea {
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  z-index: 2;
+}
+
+.product-card-badge + .product-card-badge {
+  top: 36px;
 }
 
 .product-card-badge.badge-no-stock {
   background: #f44336;
   color: #fff;
-  left: auto;
-  right: 10px;
+  left: 10px;
+  right: auto;
 }
 
 .product-card-body {
@@ -2227,7 +2232,7 @@ input, select, textarea {
   border-left: 4px solid var(--gold);
   box-shadow: 0 8px 30px rgba(0,0,0,0.3);
   z-index: 3000;
-  transform: translateX(120%);
+  transform: translateX(180%);
   transition: transform 0.4s cubic-bezier(.4,0,.2,1);
   font-size: 0.88rem;
 }
