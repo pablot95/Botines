@@ -171,6 +171,21 @@ const Cart = {
     if (cartBtn) cartBtn.addEventListener('click', () => this.openSidebar());
     if (cartClose) cartClose.addEventListener('click', () => this.closeSidebar());
     if (cartBackdrop) cartBackdrop.addEventListener('click', () => this.closeSidebar());
+
+    // Listener único para los botones del carrito (delegación de eventos)
+    let itemsContainer = document.getElementById('cartItems');
+    if (itemsContainer) {
+      itemsContainer.addEventListener('click', (e) => {
+        let btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        let action = btn.dataset.action;
+        let id = btn.dataset.id;
+        let size = btn.dataset.size;
+        if (action === 'minus') this.updateQty(id, size, -1);
+        if (action === 'plus') this.updateQty(id, size, 1);
+        if (action === 'remove') this.removeItem(id, size);
+      });
+    }
   }
 };
 

@@ -603,26 +603,44 @@
     let optionEfectivo = document.getElementById('optionEfectivo');
 
     function computePromoBreakdown(paymentMethod) {
-      if (paymentMethod !== 'efectivo' && paymentMethod !== 'transferencia') {
+      const isEfectivo = paymentMethod === 'efectivo' || paymentMethod === 'transferencia';
+
+      if (!isEfectivo) {
         return { effectiveSubtotal: subtotal, savings: 0 };
       }
+
+      // Contar unidades por tipo
       let f11 = 0, f5 = 0;
       items.forEach(item => {
         let qty = item.qty || 1;
         if (item.category === 'f11' || item.category === 'mixtos') f11 += qty;
         else f5 += qty;
       });
-      let total = 0;
+
+      // --- Promo por par (2 del mismo tipo) ---
+      let totalPar = 0;
       let f11Pairs = Math.floor(f11 / 2);
-      let f5Pairs = Math.floor(f5 / 2);
-      total += f11Pairs * 230000 + f5Pairs * 180000;
+      let f5Pairs  = Math.floor(f5  / 2);
+      totalPar += f11Pairs * 230000 + f5Pairs * 180000;
       let remF11 = f11 - f11Pairs * 2;
-      let remF5 = f5 - f5Pairs * 2;
-      let mixed = Math.min(remF11, remF5);
-      total += mixed * 220000;
+      let remF5  = f5  - f5Pairs  * 2;
+      let mixed  = Math.min(remF11, remF5);
+      totalPar += mixed * 220000;
       remF11 -= mixed; remF5 -= mixed;
-      total += remF11 * 131250 + remF5 * 101250;
-      return { effectiveSubtotal: total, savings: subtotal - total };
+      totalPar += remF11 * 131250 + remF5 * 101250;
+
+      // --- Promo 4 al precio de 3 (mismo tipo, precio unitario efectivo) ---
+      let total4x3 = 0;
+      let f11Groups = Math.floor(f11 / 4);
+      let f5Groups  = Math.floor(f5  / 4);
+      total4x3 += f11Groups * 3 * 131250 + f5Groups * 3 * 101250;
+      let remF11b = f11 - f11Groups * 4;
+      let remF5b  = f5  - f5Groups  * 4;
+      total4x3 += remF11b * 131250 + remF5b * 101250;
+
+      // Aplicar el que da más ahorro
+      let best = Math.min(totalPar, total4x3);
+      return { effectiveSubtotal: best, savings: subtotal - best };
     }
 
     if (chkSubtotal) chkSubtotal.textContent = Cart.formatPrice(subtotal);
