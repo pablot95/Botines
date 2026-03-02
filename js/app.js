@@ -341,7 +341,7 @@
         }
 
         let sizeOptions = document.getElementById('sizeOptions');
-        let allSizes = [
+        const ADULT_SIZES = [
           { us: '6.5', cm: '24.5', eur: '39', arg: '38' },
           { us: '7', cm: '25', eur: '40', arg: '39' },
           { us: '7.5', cm: '25.5', eur: '40½', arg: '39½' },
@@ -355,6 +355,19 @@
           { us: '11.5', cm: '29.5', eur: '45½', arg: '44½' },
           { us: '12', cm: '30', eur: '46', arg: '45' }
         ];
+        const KIDS_SIZES_PRODUCT = [
+          { us: '1K', cm: '19.5', eur: '32', arg: '32' },
+          { us: '1.5K', cm: '20', eur: '32.5', arg: '32.5' },
+          { us: '2K', cm: '20.5', eur: '33', arg: '33' },
+          { us: '2.5K', cm: '21', eur: '34', arg: '34' },
+          { us: '3K', cm: '21.5', eur: '34.5', arg: '34.5' },
+          { us: '3.5K', cm: '22', eur: '35', arg: '35' },
+          { us: '4K', cm: '22.5', eur: '36', arg: '36' },
+          { us: '4.5K', cm: '23', eur: '36.5', arg: '36.5' },
+          { us: '5K', cm: '23.5', eur: '37', arg: '37' },
+          { us: '5.5K', cm: '24', eur: '37.5', arg: '37.5' }
+        ];
+        let allSizes = product.category === 'kids' ? KIDS_SIZES_PRODUCT : ADULT_SIZES;
 
         let productSizeArgs = (product.sizes || []).map(s => String(s.arg || s));
         let selectedSize = null;
