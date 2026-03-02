@@ -13,6 +13,19 @@
   { us: '12', cm: '30', eur: '46', arg: '45' }
 ];
 
+const KIDS_SIZES = [
+  { us: '1K', cm: '19.5', eur: '32', arg: '1K' },
+  { us: '1.5K', cm: '20', eur: '32.5', arg: '1.5K' },
+  { us: '2K', cm: '20.5', eur: '33', arg: '2K' },
+  { us: '2.5K', cm: '21', eur: '34', arg: '2.5K' },
+  { us: '3K', cm: '21.5', eur: '34.5', arg: '3K' },
+  { us: '3.5K', cm: '22', eur: '35', arg: '3.5K' },
+  { us: '4K', cm: '22.5', eur: '36', arg: '4K' },
+  { us: '4.5K', cm: '23', eur: '36.5', arg: '4.5K' },
+  { us: '5K', cm: '23.5', eur: '37', arg: '5K' },
+  { us: '5.5K', cm: '24', eur: '37.5', arg: '5.5K' }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const loginScreen = document.getElementById('loginScreen');
@@ -77,35 +90,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const CATEGORY_PRICES = { f11: 130000, mixtos: 130000, f5: 100000, futsal: 100000 };
 
-  ALL_SIZES.forEach(size => {
-    let div = document.createElement('div');
-    div.className = 'admin-size-item';
-    let label = document.createElement('label');
-    let cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.name = 'size';
-    cb.value = size.arg;
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(` ${size.arg} (US ${size.us})`))
-    let stockInp = document.createElement('input');
-    stockInp.type = 'number';
-    stockInp.className = 'size-stock-input';
-    stockInp.dataset.arg = size.arg;
-    stockInp.min = 0;
-    stockInp.step = 1;
-    stockInp.value = 0;
-    stockInp.placeholder = 'Stock';
-    stockInp.addEventListener('input', function() {
-      if (parseInt(this.value) > 0) cb.checked = true;
+  function renderSizesGrid(sizesArray, currentSizes) {
+    currentSizes = currentSizes || [];
+    sizesGrid.innerHTML = '';
+    sizesArray.forEach(size => {
+      let div = document.createElement('div');
+      div.className = 'admin-size-item';
+      let label = document.createElement('label');
+      let cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.name = 'size';
+      cb.value = size.arg;
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(` ${size.arg} (US ${size.us})`));
+      let stockInp = document.createElement('input');
+      stockInp.type = 'number';
+      stockInp.className = 'size-stock-input';
+      stockInp.dataset.arg = size.arg;
+      stockInp.min = 0;
+      stockInp.step = 1;
+      stockInp.value = 0;
+      stockInp.placeholder = 'Stock';
+      stockInp.addEventListener('input', function() {
+        if (parseInt(this.value) > 0) cb.checked = true;
+      });
+      let existing = currentSizes.find(s => String(s.arg) === String(size.arg));
+      if (existing) {
+        cb.checked = true;
+        stockInp.value = existing.stock || 0;
+      }
+      div.appendChild(label);
+      div.appendChild(stockInp);
+      sizesGrid.appendChild(div);
     });
-    div.appendChild(label);
-    div.appendChild(stockInp);
-    sizesGrid.appendChild(div);
-  });
+  }
+  renderSizesGrid(ALL_SIZES);
 
   document.getElementById('pCategory').addEventListener('change', function() {
     let price = CATEGORY_PRICES[this.value];
     if (price) document.getElementById('pPrice').value = price;
+    renderSizesGrid(this.value === 'kids' ? KIDS_SIZES : ALL_SIZES);
   });
 
   function openModal() {
@@ -121,8 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     imagePreview.innerHTML = '';
     existingImages.innerHTML = '';
     editingProductImages = [];
-    sizesGrid.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    sizesGrid.querySelectorAll('.size-stock-input').forEach(i => i.value = 0);
+    renderSizesGrid(ALL_SIZES);
   }
 
   btnNewProduct.addEventListener('click', () => {
@@ -176,7 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sizesGrid.querySelectorAll('.admin-size-item').forEach(item => {
       let cb = item.querySelector('input[type="checkbox"]');
       if (cb.checked) {
-        let sizeObj = ALL_SIZES.find(s => s.arg === cb.value);
+        let allSizesRef = [...ALL_SIZES, ...KIDS_SIZES];
+        let sizeObj = allSizesRef.find(s => s.arg === cb.value);
         let sizeStock = parseInt(item.querySelector('.size-stock-input').value) || 0;
         totalStock += sizeStock;
         if (sizeObj) selectedSizes.push({ ...sizeObj, stock: sizeStock });
@@ -291,20 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('pFeatured').checked = p.featured || false;
       document.getElementById('pDescription').value = p.description || '';
 
-      sizesGrid.querySelectorAll('.admin-size-item').forEach(item => {
-        let cb = item.querySelector('input[type="checkbox"]');
-        let stockInput = item.querySelector('.size-stock-input');
-        let matchedSize = (p.sizes || []).find(s => String(s.arg) === cb.value);
-        cb.checked = !!matchedSize;
-        if (matchedSize) {
-          // Si tiene stock por talle guardado lo usa, sino pone el stock total anterior
-          stockInput.value = (matchedSize.stock !== undefined && matchedSize.stock !== null)
-            ? matchedSize.stock
-            : (p.stock || 0);
-        } else {
-          stockInput.value = 0;
-        }
-      });
+      let sizesArray = p.category === 'kids' ? KIDS_SIZES : ALL_SIZES;
+      renderSizesGrid(sizesArray, p.sizes || []);
 
       editingProductImages = p.images || [];
       existingImages.innerHTML = '';
