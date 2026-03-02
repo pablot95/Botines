@@ -520,7 +520,6 @@ body {
 
 .admin-form-group input[type="text"],
 .admin-form-group input[type="number"],
-.admin-form-group input[type="file"],
 .admin-form-group select,
 .admin-form-group textarea {
   width: 100%;
@@ -531,6 +530,32 @@ body {
   font-family: var(--font-body);
   outline: none;
   transition: var(--transition);
+}
+
+.admin-form-group input[type="file"] {
+  width: 100%;
+  padding: 18px 12px;
+  border: 2px dashed var(--gray-light);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  background: #fafafa;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.admin-form-group input[type="file"]:hover,
+.admin-form-group input[type="file"]:focus,
+.admin-form-group input[type="file"].drag-over {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.04);
+  outline: none;
+}
+
+.admin-form-group input[type="file"].drag-over {
+  background: rgba(201,168,76,0.10);
+  border-color: var(--gold-dark);
 }
 
 .admin-form-group input:focus,
@@ -550,7 +575,13 @@ body {
   gap: 8px;
 }
 
-.admin-sizes-grid label {
+.admin-size-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-size-item label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -565,15 +596,33 @@ body {
   transition: var(--transition);
 }
 
-.admin-sizes-grid label:has(input:checked) {
+.admin-size-item label:has(input:checked) {
   border-color: var(--gold);
   background: rgba(201,168,76,0.06);
 }
 
-.admin-sizes-grid input {
+.admin-size-item input[type="checkbox"] {
   accent-color: var(--gold);
   width: 15px;
   height: 15px;
+}
+
+.admin-size-item .size-stock-input {
+  width: 100%;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border: 1px solid var(--gray-light);
+  border-radius: 4px;
+  background: #f7f7f7;
+  color: var(--dark);
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.admin-size-item .size-stock-input:focus {
+  border-color: var(--gold);
+  outline: none;
+  background: #fff;
 }
 
 .admin-image-preview {
@@ -973,9 +1022,14 @@ body {
     gap: 6px;
   }
 
-  .admin-sizes-grid label {
+  .admin-size-item label {
     font-size: 0.78rem;
     padding: 5px 6px;
+  }
+
+  .admin-size-item .size-stock-input {
+    font-size: 0.72rem;
+    padding: 3px 4px;
   }
 
   .admin-image-preview img,

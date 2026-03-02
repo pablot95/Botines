@@ -75,10 +75,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let editingProductImages = [];
 
+  const CATEGORY_PRICES = { f11: 130000, mixtos: 130000, f5: 100000, futsal: 100000 };
+
   ALL_SIZES.forEach(size => {
+    let div = document.createElement('div');
+    div.className = 'admin-size-item';
     let label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" name="size" value="${size.arg}"> ${size.arg} (US ${size.us})`;
-    sizesGrid.appendChild(label);
+    let cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.name = 'size';
+    cb.value = size.arg;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(` ${size.arg} (US ${size.us})`))
+    let stockInp = document.createElement('input');
+    stockInp.type = 'number';
+    stockInp.className = 'size-stock-input';
+    stockInp.dataset.arg = size.arg;
+    stockInp.min = 0;
+    stockInp.step = 1;
+    stockInp.value = 0;
+    stockInp.placeholder = 'Stock';
+    stockInp.addEventListener('input', function() {
+      if (parseInt(this.value) > 0) cb.checked = true;
+    });
+    div.appendChild(label);
+    div.appendChild(stockInp);
+    sizesGrid.appendChild(div);
+  });
+
+  document.getElementById('pCategory').addEventListener('change', function() {
+    let price = CATEGORY_PRICES[this.value];
+    if (price) document.getElementById('pPrice').value = price;
   });
 
   function openModal() {
@@ -94,7 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
     imagePreview.innerHTML = '';
     existingImages.innerHTML = '';
     editingProductImages = [];
-    sizesGrid.querySelectorAll('input').forEach(c => c.checked = false);
+    sizesGrid.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+    sizesGrid.querySelectorAll('.size-stock-input').forEach(i => i.value = 0);
   }
 
   btnNewProduct.addEventListener('click', () => {
@@ -107,7 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
   modalCancel.addEventListener('click', closeModal);
   modalBackdrop.addEventListener('click', closeModal);
 
-  document.getElementById('pImages').addEventListener('change', (e) => {
+  const pImages = document.getElementById('pImages');
+
+  pImages.addEventListener('dragover', () => pImages.classList.add('drag-over'));
+  pImages.addEventListener('dragleave', () => pImages.classList.remove('drag-over'));
+  pImages.addEventListener('drop', () => pImages.classList.remove('drag-over'));
+
+  pImages.addEventListener('change', (e) => {
     imagePreview.innerHTML = '';
     Array.from(e.target.files).forEach(file => {
       let reader = new FileReader();
@@ -134,14 +168,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let name = document.getElementById('pName').value.trim();
     let category = document.getElementById('pCategory').value;
     let price = parseInt(document.getElementById('pPrice').value);
-    let stock = parseInt(document.getElementById('pStock').value) || 0;
     let featured = document.getElementById('pFeatured').checked;
     let description = document.getElementById('pDescription').value.trim();
 
     let selectedSizes = [];
-    sizesGrid.querySelectorAll('input:checked').forEach(c => {
-      let sizeObj = ALL_SIZES.find(s => s.arg === c.value);
-      if (sizeObj) selectedSizes.push(sizeObj);
+    let totalStock = 0;
+    sizesGrid.querySelectorAll('.admin-size-item').forEach(item => {
+      let cb = item.querySelector('input[type="checkbox"]');
+      if (cb.checked) {
+        let sizeObj = ALL_SIZES.find(s => s.arg === cb.value);
+        let sizeStock = parseInt(item.querySelector('.size-stock-input').value) || 0;
+        totalStock += sizeStock;
+        if (sizeObj) selectedSizes.push({ ...sizeObj, stock: sizeStock });
+      }
     });
 
     let imageUrls = [...editingProductImages];
@@ -162,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name,
       category,
       price,
-      stock,
+      stock: totalStock,
       featured,
       description,
       sizes: selectedSizes,
@@ -214,8 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let tr = document.createElement('tr');
         let imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '../images/logo.jpeg';
         tr.innerHTML = `
-          <td><img src="${imgSrc}" alt="${p.name}"></td>
-          <td>${p.name} <small style="color:#999;font-weight:400">#${p.productCode || '—'}</small></td>
+          <td><img src="${imgSrc}" alt=""></td>
+          <td><strong>#${p.productCode || '—'}</strong>${(p.name && p.name !== 'undefined' && isNaN(p.name)) ? '<br><small style="color:#999;font-weight:400">' + p.name + '</small>' : ''}</td>
           <td>${p.category === 'f11' ? 'Fútbol 11' : p.category === 'f5' ? 'Fútbol 5' : p.category === 'futsal' ? 'Futsal' : p.category === 'mixtos' ? 'Mixtos' : p.category === 'kids' ? 'Kids' : (p.category || '')}</td>
           <td>${formatPrice(p.price)}</td>
           <td><span class="badge-stock ${(p.stock || 0) > 0 ? 'in-stock' : 'no-stock'}">${p.stock || 0}</span></td>
@@ -249,12 +288,22 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('pName').value = p.name || '';
       document.getElementById('pCategory').value = p.category || '';
       document.getElementById('pPrice').value = p.price || 0;
-      document.getElementById('pStock').value = p.stock || 0;
       document.getElementById('pFeatured').checked = p.featured || false;
       document.getElementById('pDescription').value = p.description || '';
 
-      sizesGrid.querySelectorAll('input').forEach(c => {
-        c.checked = (p.sizes || []).some(s => String(s.arg) === c.value);
+      sizesGrid.querySelectorAll('.admin-size-item').forEach(item => {
+        let cb = item.querySelector('input[type="checkbox"]');
+        let stockInput = item.querySelector('.size-stock-input');
+        let matchedSize = (p.sizes || []).find(s => String(s.arg) === cb.value);
+        cb.checked = !!matchedSize;
+        if (matchedSize) {
+          // Si tiene stock por talle guardado lo usa, sino pone el stock total anterior
+          stockInput.value = (matchedSize.stock !== undefined && matchedSize.stock !== null)
+            ? matchedSize.stock
+            : (p.stock || 0);
+        } else {
+          stockInput.value = 0;
+        }
       });
 
       editingProductImages = p.images || [];

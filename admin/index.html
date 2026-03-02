@@ -114,10 +114,6 @@
           <input type="hidden" id="productId">
           <div class="admin-form-row">
             <div class="admin-form-group">
-              <label for="pName">Nombre (opcional)</label>
-              <input type="text" id="pName">
-            </div>
-            <div class="admin-form-group">
               <label for="pCategory">Categoría</label>
               <select id="pCategory" required>
                 <option value="">Seleccionar</option>
@@ -128,16 +124,19 @@
                 <option value="kids">Kids</option>
               </select>
             </div>
-          </div>
-          <div class="admin-form-row">
             <div class="admin-form-group">
               <label for="pPrice">Precio</label>
               <input type="number" id="pPrice" required min="0" step="1">
             </div>
-            <div class="admin-form-group">
-              <label for="pStock">Stock</label>
-              <input type="number" id="pStock" required min="0" step="1" value="0">
-            </div>
+          </div>
+          <div class="admin-form-group">
+            <label for="pImages">
+              Imágenes del producto
+              <span style="font-size:0.75rem;font-weight:400;color:#999;margin-left:6px;">— podés arrastrar archivos acá</span>
+            </label>
+            <input type="file" id="pImages" accept="image/*" multiple>
+            <div class="admin-image-preview" id="imagePreview"></div>
+            <div class="admin-existing-images" id="existingImages"></div>
           </div>
           <div class="admin-form-row">
             <div class="admin-form-group">
@@ -148,18 +147,18 @@
             </div>
           </div>
           <div class="admin-form-group">
-            <label for="pDescription">Descripción (opcional)</label>
-            <textarea id="pDescription" rows="3"></textarea>
-          </div>
-          <div class="admin-form-group">
             <label>Talles disponibles</label>
             <div class="admin-sizes-grid" id="sizesGrid"></div>
           </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="pName">Nombre (opcional)</label>
+              <input type="text" id="pName">
+            </div>
+          </div>
           <div class="admin-form-group">
-            <label for="pImages">Imágenes del producto</label>
-            <input type="file" id="pImages" accept="image/*" multiple>
-            <div class="admin-image-preview" id="imagePreview"></div>
-            <div class="admin-existing-images" id="existingImages"></div>
+            <label for="pDescription">Descripción (opcional)</label>
+            <textarea id="pDescription" rows="3"></textarea>
           </div>
           <div class="admin-form-actions">
             <button type="button" class="admin-btn-secondary" id="modalCancel">Cancelar</button>
