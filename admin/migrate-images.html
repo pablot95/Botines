@@ -24,18 +24,9 @@
 </head>
 <body>
   <h1>🔄 Migración de imágenes: Firebase Storage → Hostinger</h1>
-  <p><strong>Usá esta herramienta UNA SOLA VEZ</strong> después de subir el sitio a Hostinger. Lee todos los productos de Firebase Firestore, usa <code>migrate.php</code> para descargar server-side cada imagen de Firebase Storage y guardarla en <code>/uploads/products/</code>, actualizando las URLs en Firestore.</p>
+  <p><strong>Usá esta herramienta UNA SOLA VEZ</strong> después de subir el sitio a Hostinger. Lee todos los productos de Firebase Firestore, descarga cada imagen de Firebase Storage server-side y la guarda en <code>/uploads/products/</code>, actualizando las URLs en Firestore.</p>
 
   <div class="card">
-    <h3>Configuración</h3>
-    <div class="field">
-      <label>UPLOAD_TOKEN (el mismo que pusiste en config.php)</label>
-      <input type="password" id="uploadToken" placeholder="Clave secreta de upload.php">
-    </div>
-    <div class="field">
-      <label>URL base del sitio en Hostinger</label>
-      <input type="text" id="siteUrl" value="https://botinesfv.com">
-    </div>
     <button id="btnStart">Iniciar migración</button>
     <span id="progress" style="margin-left:12px;font-size:.85rem;color:#666"></span>
   </div>
@@ -61,10 +52,7 @@
     }
 
     document.getElementById('btnStart').addEventListener('click', async () => {
-      const token   = document.getElementById('uploadToken').value.trim();
-      const siteUrl = document.getElementById('siteUrl').value.trim().replace(/\/$/, '');
-      if (!token)   { alert('Ingresá el UPLOAD_TOKEN'); return; }
-      if (!siteUrl) { alert('Ingresá la URL del sitio'); return; }
+      const siteUrl = window.location.origin;
 
       const btn = document.getElementById('btnStart');
       btn.disabled = true;
@@ -102,7 +90,7 @@
               const resp = await fetch(siteUrl + '/migrate.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, url })
+                body: JSON.stringify({ url })
               });
               const result = await resp.json();
               if (result.ok && result.newUrl) {

@@ -1,7 +1,6 @@
 <?php
 // migrate.php — Descarga imágenes de Firebase Storage y las guarda en Hostinger
-// SOLO para uso durante la migración. Acceso bloqueado por .htaccess en producción.
-// Para ejecutar: temporalmente cambiar .htaccess o correr por SSH/CLI.
+// Herramienta de un solo uso. Solo accesible desde el mismo servidor.
 
 require_once __DIR__ . '/config.php';
 
@@ -12,15 +11,16 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
-$body  = json_decode(file_get_contents('php://input'), true);
-$token = $body['token'] ?? '';
-
-if ($token !== UPLOAD_TOKEN) {
+// Solo aceptar requests del mismo dominio
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+$host    = $_SERVER['HTTP_HOST'] ?? '';
+if (empty($referer) || strpos($referer, $host) === false) {
     http_response_code(403);
     echo json_encode(['error' => 'No autorizado']);
     exit;
 }
 
+$body     = json_decode(file_get_contents('php://input'), true);
 $imageUrl = $body['url'] ?? '';
 if (empty($imageUrl)) {
     http_response_code(400);
