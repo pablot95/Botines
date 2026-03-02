@@ -71,17 +71,18 @@
   const heroDots = document.querySelectorAll('.hero-dot');
   const heroPrev = document.getElementById('heroPrev');
   const heroNext = document.getElementById('heroNext');
+  const heroTotal = heroDots.length || 3;
   let heroSlide = 0;
   let heroInterval;
 
   function setHeroSlide(idx) {
-    heroSlide = idx;
-    if (heroTrack) heroTrack.style.transform = `translateX(-${idx * 50}%)`;
-    heroDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    heroSlide = (idx + heroTotal) % heroTotal;
+    if (heroTrack) heroTrack.style.transform = `translateX(-${heroSlide * (100 / heroTotal)}%)`;
+    heroDots.forEach((d, i) => d.classList.toggle('active', i === heroSlide));
   }
 
   function nextHero() {
-    setHeroSlide(heroSlide === 0 ? 1 : 0);
+    setHeroSlide(heroSlide + 1);
   }
 
   function startHeroAuto() {
@@ -100,7 +101,7 @@
         resetHeroAuto();
       });
     });
-    if (heroPrev) heroPrev.addEventListener('click', () => { setHeroSlide(heroSlide === 0 ? 1 : 0); resetHeroAuto(); });
+    if (heroPrev) heroPrev.addEventListener('click', () => { setHeroSlide(heroSlide - 1); resetHeroAuto(); });
     if (heroNext) heroNext.addEventListener('click', () => { nextHero(); resetHeroAuto(); });
     startHeroAuto();
   }

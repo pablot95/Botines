@@ -377,13 +377,13 @@ input, select, textarea {
 
 .hero-track {
   display: flex;
-  width: 200%;
+  width: 300%;
   height: 100%;
   transition: transform 0.7s cubic-bezier(.4,0,.2,1);
 }
 
 .hero-slide {
-  width: 50%;
+  width: calc(100% / 3);
   height: 100%;
   position: relative;
 }
