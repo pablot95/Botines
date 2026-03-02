@@ -929,7 +929,7 @@
           if (currentPayment === 'mercadopago') {
             // Crear preferencia de pago en MercadoPago via serverless function
             const baseUrl = window.location.origin;
-            fetch('/api/create-preference', {
+            fetch('/create-preference.php', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

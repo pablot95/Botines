@@ -211,15 +211,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let imageUrls = [...editingProductImages];
 
+    // Token de upload (debe coincidir con UPLOAD_TOKEN en config.php)
+    const UPLOAD_TOKEN = 'CAMBIAR_POR_UNA_CLAVE_SECRETA';
+
     let files = document.getElementById('pImages').files;
     if (files.length > 0) {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
-        let fileName = Date.now() + '_' + file.name;
-        let ref = storage.ref('products/' + fileName);
-        let snapshot = await ref.put(file);
-        let url = await snapshot.ref.getDownloadURL();
-        imageUrls.push(url);
+        let formData = new FormData();
+        formData.append('file', file);
+        formData.append('token', UPLOAD_TOKEN);
+        let resp = await fetch('/upload.php', { method: 'POST', body: formData });
+        let uploadResult = await resp.json();
+        if (uploadResult.url) {
+          imageUrls.push(uploadResult.url);
+        } else {
+          throw new Error('Error al subir imagen: ' + (uploadResult.error || 'desconocido'));
+        }
       }
     }
 

@@ -6,6 +6,15 @@ node_modules/
 .env.local
 .env.production
 
+# Hostinger — Configuración privada con claves MP y upload token
+config.php
+
+# Log del webhook de MercadoPago (generado en el servidor)
+mp-webhook.log
+
+# Imágenes subidas al servidor (no se versionan)
+uploads/
+
 # Vercel
 .vercel/
 
