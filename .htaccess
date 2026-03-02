@@ -4,10 +4,7 @@
     Deny from all
 </Files>
 
-<Files "migrate.php">
-    Order Allow,Deny
-    Deny from all
-</Files>
+# migrate.php tiene seguridad propia por UPLOAD_TOKEN — no se bloquea aquí
 
 # ===== Bloquear carpeta api/ de Vercel (ya no se usa) =====
 <IfModule mod_rewrite.c>

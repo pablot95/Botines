@@ -24,7 +24,7 @@
 </head>
 <body>
   <h1>🔄 Migración de imágenes: Firebase Storage → Hostinger</h1>
-  <p><strong>Usá esta herramienta UNA SOLA VEZ</strong> después de subir el sitio a Hostinger. Lee todos los productos de Firebase Firestore, descarga cada imagen de Firebase Storage directamente en el browser y la sube a <code>/uploads/products/</code> vía <code>upload.php</code>, actualizando las URLs en Firestore.</p>
+  <p><strong>Usá esta herramienta UNA SOLA VEZ</strong> después de subir el sitio a Hostinger. Lee todos los productos de Firebase Firestore, usa <code>migrate.php</code> para descargar server-side cada imagen de Firebase Storage y guardarla en <code>/uploads/products/</code>, actualizando las URLs en Firestore.</p>
 
   <div class="card">
     <h3>Configuración</h3>
@@ -98,31 +98,20 @@
 
             log(`  Descargando: ${url.substring(0, 80)}...`);
             try {
-              // 1. Descargar imagen directamente desde Firebase Storage (CORS abierto)
-              const imgResp = await fetch(url);
-              if (!imgResp.ok) throw new Error(`HTTP ${imgResp.status} al descargar imagen`);
-              const blob = await imgResp.blob();
-
-              // 2. Extraer nombre de archivo desde la URL
-              const rawName = url.split('/').pop().split('?')[0];
-              const ext = blob.type.split('/')[1] || 'jpg';
-              const fileName = rawName.includes('.') ? rawName : rawName + '.' + ext;
-
-              // 3. Subir a upload.php (igual que el admin panel)
-              const fd = new FormData();
-              fd.append('file', new File([blob], decodeURIComponent(fileName), { type: blob.type }));
-              fd.append('token', token);
-
-              const upResp = await fetch(siteUrl + '/upload.php', { method: 'POST', body: fd });
-              const result = await upResp.json();
-
-              if (result.url) {
-                log(`  ✓ → ${result.url}`, 'ok');
-                newImages.push(result.url);
+              // migrate.php se encarga de descargar server-side (evita CORS de Firebase Storage)
+              const resp = await fetch(siteUrl + '/migrate.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, url })
+              });
+              const result = await resp.json();
+              if (result.ok && result.newUrl) {
+                log(`  ✓ → ${result.newUrl}`, 'ok');
+                newImages.push(result.newUrl);
                 migratedImages++;
                 changed = true;
               } else {
-                log(`  ✗ Error upload: ${result.error || JSON.stringify(result)}`, 'err');
+                log(`  ✗ Error: ${result.error || 'desconocido'}`, 'err');
                 newImages.push(url);
                 errors++;
               }
