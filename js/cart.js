@@ -124,17 +124,6 @@ const Cart = {
       `;
       itemsContainer.appendChild(div);
     });
-
-    itemsContainer.addEventListener('click', (e) => {
-      let btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      let action = btn.dataset.action;
-      let id = btn.dataset.id;
-      let size = btn.dataset.size;
-      if (action === 'minus') this.updateQty(id, size, -1);
-      if (action === 'plus') this.updateQty(id, size, 1);
-      if (action === 'remove') this.removeItem(id, size);
-    });
   },
 
   showToast(msg) {
