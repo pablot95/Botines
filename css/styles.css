@@ -1076,6 +1076,8 @@ input, select, textarea {
   position: sticky;
   top: 90px;
   align-self: flex-start;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
   background: var(--white);
   border: 1px solid var(--gray-light);
   border-radius: var(--radius);
