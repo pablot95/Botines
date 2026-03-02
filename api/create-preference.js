@@ -1,7 +1,7 @@
 const https = require('https');
 
 module.exports = async (req, res) => {
-  // CORS headers
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'No hay items en el pedido' });
     }
 
-    // Build preference items - ensure unit_price is a Number
+
     const mpItems = items.map(item => ({
       title: String(item.name).substring(0, 256),
       quantity: parseInt(item.qty) || 1,
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
       currency_id: 'ARS'
     }));
 
-    // Add shipping as an item if applicable
+
     if (shipment_cost && parseFloat(shipment_cost) > 0) {
       mpItems.push({
         title: 'Envío',
@@ -46,7 +46,6 @@ module.exports = async (req, res) => {
 
     const baseUrl = back_url || 'https://botinesfv.com';
 
-    // Minimal preference - only required fields
     const preference = {
       items: mpItems,
       back_urls: {
@@ -58,12 +57,11 @@ module.exports = async (req, res) => {
       external_reference: order_id ? String(order_id) : undefined
     };
 
-    // Only add payer with valid email
     if (payer && payer.email && payer.email.includes('@')) {
       preference.payer = { email: payer.email };
     }
 
-    // Create preference via MercadoPago API
+
     const data = JSON.stringify(preference);
 
     const result = await new Promise((resolve, reject) => {
