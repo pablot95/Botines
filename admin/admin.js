@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let editingProductImages = [];
 
-  const CATEGORY_PRICES = { f11: 130000, mixtos: 130000, f5: 100000, futsal: 100000 };
+  const CATEGORY_PRICES = { f11: 175000, mixtos: 175000, f5: 135000, futsal: 135000, kids: 135000 };
 
   function renderSizesGrid(sizesArray, currentSizes) {
     currentSizes = currentSizes || [];
@@ -153,6 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal();
     openModal();
   });
+
+
 
   modalClose.addEventListener('click', closeModal);
   modalCancel.addEventListener('click', closeModal);

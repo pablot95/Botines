@@ -592,6 +592,8 @@
 
     let chkSubtotal = document.getElementById('chkSubtotal');
     let chkTotal = document.getElementById('chkTotal');
+    let chkDiscount = document.getElementById('chkDiscount');
+    let chkDiscountLine = document.getElementById('discountLine');
     let shippingLabel = document.getElementById('shippingLabel');
     let shippingCost = document.getElementById('shippingCost');
     let paymentMsg = document.getElementById('paymentMsg');
@@ -599,10 +601,40 @@
     let optionMP = document.getElementById('optionMP');
     let optionEfectivo = document.getElementById('optionEfectivo');
 
+    function computePromoBreakdown(paymentMethod) {
+      if (paymentMethod !== 'efectivo' && paymentMethod !== 'transferencia') {
+        return { effectiveSubtotal: subtotal, savings: 0 };
+      }
+      let f11 = 0, f5 = 0;
+      items.forEach(item => {
+        let qty = item.qty || 1;
+        if (item.category === 'f11' || item.category === 'mixtos') f11 += qty;
+        else f5 += qty;
+      });
+      let total = 0;
+      let f11Pairs = Math.floor(f11 / 2);
+      let f5Pairs = Math.floor(f5 / 2);
+      total += f11Pairs * 230000 + f5Pairs * 180000;
+      let remF11 = f11 - f11Pairs * 2;
+      let remF5 = f5 - f5Pairs * 2;
+      let mixed = Math.min(remF11, remF5);
+      total += mixed * 220000;
+      remF11 -= mixed; remF5 -= mixed;
+      total += remF11 * 131250 + remF5 * 101250;
+      return { effectiveSubtotal: total, savings: subtotal - total };
+    }
+
     if (chkSubtotal) chkSubtotal.textContent = Cart.formatPrice(subtotal);
 
     function updateTotals() {
-      let total = subtotal + currentShipping;
+      let promo = computePromoBreakdown(currentPayment);
+      let total = promo.effectiveSubtotal + currentShipping;
+      if (promo.savings > 0) {
+        if (chkDiscount) chkDiscount.textContent = '− ' + Cart.formatPrice(promo.savings);
+        if (chkDiscountLine) chkDiscountLine.style.display = '';
+      } else {
+        if (chkDiscountLine) chkDiscountLine.style.display = 'none';
+      }
       if (chkTotal) chkTotal.textContent = Cart.formatPrice(total);
     }
 
@@ -695,6 +727,7 @@
         } else if (currentPayment === 'efectivo') {
           if (paymentMsg) paymentMsg.textContent = 'Te redirigiremos a WhatsApp para coordinar el pago en efectivo.';
         }
+        updateTotals();
         updatePayButton();
       });
     });
@@ -753,7 +786,8 @@
       let zonaText = currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona';
       let payText = currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia' : 'Efectivo';
       let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) + ' (moto)' : 'A coordinar';
-      let total = subtotal + currentShipping;
+      let promo = computePromoBreakdown(currentPayment);
+      let total = promo.effectiveSubtotal + currentShipping;
 
       let text = `🛒 *NUEVO PEDIDO — Botines FV*\n\n`;
       text += `👤 *Cliente:* ${nombre} ${apellido}\n`;
@@ -787,11 +821,11 @@
       let provincia = document.getElementById('chkProvincia').value.trim();
       let cp = document.getElementById('chkCP').value.trim();
       let mensaje = document.getElementById('chkMensaje').value.trim();
-      let total = subtotal + currentShipping;
       let shippingText = (currentZona === 'caba' || currentZona === 'amba') ? Cart.formatPrice(10000) + ' (moto)' : 'A coordinar';
       let zonaText = currentZona === 'caba' ? 'CABA' : currentZona === 'amba' ? 'AMBA' : 'Otra zona';
       let payText = currentPayment === 'mercadopago' ? 'Mercado Pago' : currentPayment === 'transferencia' ? 'Transferencia bancaria' : 'Efectivo';
-
+      let promo = computePromoBreakdown(currentPayment);
+      let total = promo.effectiveSubtotal + currentShipping;
       let now = new Date();
       let fecha = now.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
       let hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
@@ -845,6 +879,9 @@
       btnPay.addEventListener('click', () => {
         if (!validateForm()) return;
 
+        let promoResult = computePromoBreakdown(currentPayment);
+        let effectiveSubtotal = promoResult.effectiveSubtotal;
+
         let orderData = {
           customer: {
             nombre: document.getElementById('chkNombre').value.trim(),
@@ -867,9 +904,9 @@
             size: i.size,
             qty: i.qty
           })),
-          subtotal: subtotal,
+          subtotal: effectiveSubtotal,
           shipping: currentShipping,
-          total: subtotal + currentShipping,
+          total: effectiveSubtotal + currentShipping,
           paymentMethod: currentPayment,
           status: 'pending',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()

@@ -1066,6 +1066,34 @@ input, select, textarea {
   gap: 30px;
   padding: 30px 0 60px;
 }
+
+/* ── Promo bar ── */
+.promo-bar {
+  background: var(--gold-gradient);
+  overflow: hidden;
+  padding: 6px 0;
+  position: relative;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  gap: 60px;
+}
+.promo-bar-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: promo-scroll 28s linear infinite;
+}
+.promo-bar-track span {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--black);
+  padding: 0 16px;
+}
+@keyframes promo-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 .product-page{
   max-width: 1400px;
 }
