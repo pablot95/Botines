@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let imageUrls = [...editingProductImages];
 
     // Token de upload (debe coincidir con UPLOAD_TOKEN en config.php)
-    const UPLOAD_TOKEN = 'CAMBIAR_POR_UNA_CLAVE_SECRETA';
+    const UPLOAD_TOKEN = 'APP_USR-ca349f2c-d2ac-4e4b-aac6-cf4f70b83abe';
 
     let files = document.getElementById('pImages').files;
     if (files.length > 0) {

@@ -1,7 +1,7 @@
 <?php
 // mp-webhook.php — Recibe notificaciones de MercadoPago
 // Reemplaza /api/mp-webhook.js (Vercel)
-// En MercadoPago Dashboard configurar: https://botinesfv.gokywebs.net/mp-webhook.php
+// En MercadoPago Dashboard configurar: https://botinesfv.com/mp-webhook.php
 
 require_once __DIR__ . '/config.php';
 

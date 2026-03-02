@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    const baseUrl = back_url || 'https://botinesfv.gokywebs.net';
+    const baseUrl = back_url || 'https://botinesfv.com';
 
     // Minimal preference - only required fields
     const preference = {

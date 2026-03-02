@@ -2,7 +2,7 @@ const https = require('https');
 
 // Endpoint de diagnóstico - probar si el access token es válido
 // Llama a GET /users/me en MercadoPago
-// Acceder via: https://botinesfv.gokywebs.net/api/test-mp
+// Acceder via: https://botinesfv.com/api/test-mp
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
