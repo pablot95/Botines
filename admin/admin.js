@@ -49,15 +49,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let password = document.getElementById('loginPassword').value;
     loginError.textContent = '';
 
-    if (user === 'BotinesFV' && password === 'BotinesFV2026') {
-      sessionStorage.setItem('botinesfv_admin', '1');
-      loginScreen.style.display = 'none';
-      adminApp.style.display = 'flex';
-      loadProducts();
-      loadOrders();
-    } else {
-      loginError.textContent = 'Credenciales incorrectas';
-    }
+    // Autenticación server-side (no se exponen credenciales en el JS)
+    fetch('/admin-login.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ user, password })
+    })
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+      if (ok && data.ok) {
+        sessionStorage.setItem('botinesfv_admin', '1');
+        loginScreen.style.display = 'none';
+        adminApp.style.display = 'flex';
+        loadProducts();
+        loadOrders();
+      } else {
+        loginError.textContent = data.error || 'Credenciales incorrectas';
+      }
+    })
+    .catch(() => {
+      loginError.textContent = 'Error de conexión';
+    });
   });
 
   logoutBtn.addEventListener('click', () => {
@@ -211,17 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let imageUrls = [...editingProductImages];
 
-    // Token de upload (debe coincidir con UPLOAD_TOKEN en config.php)
-    const UPLOAD_TOKEN = 'APP_USR-ca349f2c-d2ac-4e4b-aac6-cf4f70b83abe';
-
     let files = document.getElementById('pImages').files;
     if (files.length > 0) {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
         let formData = new FormData();
         formData.append('file', file);
-        formData.append('token', UPLOAD_TOKEN);
-        let resp = await fetch('/upload.php', { method: 'POST', body: formData });
+        let resp = await fetch('/upload.php', { method: 'POST', credentials: 'same-origin', body: formData });
         let uploadResult = await resp.json();
         if (uploadResult.url) {
           imageUrls.push(uploadResult.url);

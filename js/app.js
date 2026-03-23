@@ -169,11 +169,11 @@
   const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
 
   if (productsGrid) {
-    let allProducts = [];
-    let displayedCount = 0;
-    const PAGE_SIZE = 30;
+    let displayedProducts = [];
     let lastDoc = null;
     let hasMore = true;
+    let isLoading = false;
+    const PAGE_SIZE = 24;
 
     const params = new URLSearchParams(window.location.search);
     let initialCat = params.get('categoria');
@@ -203,70 +203,140 @@
       return filters;
     }
 
-    function filterProduct(product, filters) {
-      if (filters.categorias && !filters.categorias.includes((product.category || '').toLowerCase())) return false;
+    // Construye query Firestore — NO combina where+orderBy para evitar requerir composite indexes
+    function buildFirestoreQuery(filters) {
+      let query = db.collection('products');
+      if (filters.categorias && filters.categorias.length > 0) {
+        if (filters.categorias.length === 1) {
+          query = query.where('category', '==', filters.categorias[0]);
+        } else {
+          query = query.where('category', 'in', filters.categorias.slice(0, 10));
+        }
+      } else {
+        // Solo usar orderBy cuando NO hay filtro de categoría (no necesita composite index)
+        query = query.orderBy('createdAt', 'desc');
+      }
+      return query;
+    }
+
+    // Filtros que Firestore no soporta eficientemente se aplican client-side por página
+    function clientSideMatch(product, filters) {
       if (filters.talles) {
         let productSizes = (product.sizes || []).map(s => String(s.arg || s));
         if (!filters.talles.some(t => productSizes.includes(t))) return false;
       }
       if (filters.maxPrice && product.price > filters.maxPrice) return false;
       if (filters.search) {
-        let searchable = ((product.name || '') + ' ' + (product.category || '')).toLowerCase();
+        let searchable = ((product.name || '') + ' ' + (product.category || '') + ' ' + (product.productCode || '')).toLowerCase();
         if (!searchable.includes(filters.search)) return false;
       }
       return true;
     }
 
-    function renderProducts(products) {
-      productsGrid.innerHTML = '';
-      if (products.length === 0) {
-        if (emptyState) emptyState.style.display = 'block';
-        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
-        if (productsCount) productsCount.textContent = '0 productos';
-        return;
+    function loadProducts(reset) {
+      if (isLoading) return;
+      isLoading = true;
+
+      if (reset) {
+        displayedProducts = [];
+        lastDoc = null;
+        hasMore = true;
+        productsGrid.innerHTML = '';
       }
-      if (emptyState) emptyState.style.display = 'none';
-      if (productsCount) productsCount.textContent = products.length + ' producto' + (products.length !== 1 ? 's' : '');
 
-      let toShow = products.slice(0, displayedCount + PAGE_SIZE);
-      displayedCount = toShow.length;
+      let filters = getActiveFilters();
+      let query = buildFirestoreQuery(filters);
 
-      toShow.forEach(product => {
-        let card = createProductCard(product);
-        productsGrid.appendChild(card);
-      });
-
-      if (loadMoreBtn) {
-        loadMoreBtn.style.display = displayedCount < products.length ? 'block' : 'none';
+      if (lastDoc) {
+        query = query.startAfter(lastDoc);
       }
-    }
 
-    function loadProducts() {
-      displayedCount = 0;
-      db.collection('products').orderBy('createdAt', 'desc').get().then(snapshot => {
-        allProducts = [];
+      // Pedir más docs cuando hay filtros client-side para compensar los que se descarten
+      let hasClientFilters = filters.search || filters.talles || filters.maxPrice;
+      let batchSize = hasClientFilters ? PAGE_SIZE : PAGE_SIZE;
+      query = query.limit(batchSize);
+
+      query.get().then(snapshot => {
+        hasMore = snapshot.docs.length === batchSize;
+        if (snapshot.docs.length > 0) {
+          lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        }
+
+        let newProducts = [];
         snapshot.forEach(doc => {
-          allProducts.push({ id: doc.id, ...doc.data() });
+          let product = { id: doc.id, ...doc.data() };
+          if (clientSideMatch(product, filters)) {
+            newProducts.push(product);
+          }
         });
-        let filters = getActiveFilters();
-        let filtered = allProducts.filter(p => filterProduct(p, filters));
-        renderProducts(filtered);
+
+        // Ordenar por fecha si la query no incluía orderBy (cuando hay filtro de categoría)
+        if (filters.categorias && filters.categorias.length > 0) {
+          newProducts.sort((a, b) => {
+            let ta = a.createdAt ? (a.createdAt.seconds || 0) : 0;
+            let tb = b.createdAt ? (b.createdAt.seconds || 0) : 0;
+            return tb - ta;
+          });
+        }
+
+        newProducts.forEach(product => {
+          displayedProducts.push(product);
+          productsGrid.appendChild(createProductCard(product));
+        });
+
+        if (displayedProducts.length === 0 && !hasMore) {
+          if (emptyState) emptyState.style.display = 'block';
+          if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+          if (productsCount) productsCount.textContent = '0 productos';
+        } else {
+          if (emptyState) emptyState.style.display = 'none';
+          if (productsCount) productsCount.textContent = displayedProducts.length + ' producto' + (displayedProducts.length !== 1 ? 's' : '');
+          if (loadMoreBtn) loadMoreBtn.style.display = hasMore ? 'block' : 'none';
+        }
+
+        isLoading = false;
+
+        // Si filtros client-side descartaron todo este lote pero hay más datos, cargar siguiente página automáticamente
+        if (newProducts.length === 0 && hasMore) {
+          loadProducts(false);
+        }
+      }).catch(err => {
+        console.error('Error loading products:', err);
+        isLoading = false;
+        // Fallback: si la query con filtro falla, intentar sin filtro de categoría
+        if (filters.categorias && filters.categorias.length > 0 && displayedProducts.length === 0) {
+          console.warn('Retrying without category filter...');
+          db.collection('products').orderBy('createdAt', 'desc').limit(batchSize).get().then(snapshot => {
+            snapshot.forEach(doc => {
+              let product = { id: doc.id, ...doc.data() };
+              if (clientSideMatch(product, filters) && (!filters.categorias || filters.categorias.includes((product.category || '').toLowerCase()))) {
+                displayedProducts.push(product);
+                productsGrid.appendChild(createProductCard(product));
+              }
+            });
+            hasMore = snapshot.docs.length === batchSize;
+            if (snapshot.docs.length > 0) lastDoc = snapshot.docs[snapshot.docs.length - 1];
+            if (displayedProducts.length === 0) {
+              if (emptyState) emptyState.style.display = 'block';
+              if (productsCount) productsCount.textContent = '0 productos';
+            } else {
+              if (emptyState) emptyState.style.display = 'none';
+              if (productsCount) productsCount.textContent = displayedProducts.length + ' producto' + (displayedProducts.length !== 1 ? 's' : '');
+            }
+            if (loadMoreBtn) loadMoreBtn.style.display = hasMore ? 'block' : 'none';
+          }).catch(() => {});
+        }
       });
     }
 
     if (loadMoreBtn) {
       loadMoreBtn.addEventListener('click', () => {
-        let filters = getActiveFilters();
-        let filtered = allProducts.filter(p => filterProduct(p, filters));
-        renderProducts(filtered);
+        loadProducts(false);
       });
     }
 
     function applyCurrentFilters() {
-      displayedCount = 0;
-      let filters = getActiveFilters();
-      let filtered = allProducts.filter(p => filterProduct(p, filters));
-      renderProducts(filtered);
+      loadProducts(true);
     }
 
     let applyFilters = document.getElementById('applyFilters');
@@ -302,7 +372,7 @@
       });
     }
 
-    loadProducts();
+    loadProducts(true);
   }
 
   const productGallery = document.getElementById('productGallery');
@@ -449,9 +519,13 @@
           });
         }
 
-        db.collection('products').get().then(allSnap => {
+        // Productos relacionados: cargar solo de la misma categoría con límite
+        let relatedQuery = db.collection('products')
+          .where('category', '==', product.category)
+          .limit(10);
+        relatedQuery.get().then(relSnap => {
           let all = [];
-          allSnap.forEach(d => {
+          relSnap.forEach(d => {
             if (d.id !== productId) all.push({ id: d.id, ...d.data() });
           });
           for (let i = all.length - 1; i > 0; i--) {
@@ -477,63 +551,99 @@
     const paymentCollection = params.get('collection_status');
     const orderId = params.get('order') || localStorage.getItem('mp_pending_order');
 
-    // Detectar retorno de MP (puede venir como ?payment=success o ?collection_status=approved)
     const isSuccess = paymentStatus === 'success' || paymentCollection === 'approved';
     const isFailure = paymentStatus === 'failure' || paymentCollection === 'rejected';
     const isPending = paymentStatus === 'pending' || paymentCollection === 'pending';
 
     if (!isSuccess && !isFailure && !isPending) return;
 
-    const msgContainer = document.getElementById('paymentMsg');
     const checkoutPage = document.querySelector('.checkout-page');
     if (!checkoutPage) return;
 
-    // Clean URL
     window.history.replaceState({}, '', window.location.pathname);
     localStorage.removeItem('mp_pending_order');
 
-    if (isSuccess) {
-      checkoutPage.innerHTML = `
-        <div style="text-align:center;padding:60px 20px;">
-          <div style="font-size:3rem;margin-bottom:16px;">✅</div>
-          <h2 style="color:var(--gold);margin-bottom:12px;">¡Pago confirmado!</h2>
-          <p style="color:var(--light);margin-bottom:8px;">Tu pago fue procesado correctamente por Mercado Pago.</p>
-          ${orderId ? `<p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>` : ''}
-          <p style="color:var(--light);margin-bottom:24px;">Podés coordinar el envío por WhatsApp.</p>
-          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-            <a href="https://wa.me/5491132053335?text=${encodeURIComponent('Hola! Acabo de pagar mi pedido' + (orderId ? ' #' + orderId : '') + ' por Mercado Pago. Quiero coordinar el envío.')}" 
-               class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">
-              Coordinar envío por WhatsApp
-            </a>
-            <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
-          </div>
-        </div>
-      `;
-      // Send email notification for the successful payment
-      if (orderId && typeof emailjs !== 'undefined') {
-        try {
-          const EMAILJS_SERVICE = 'service_78p0pvo';
-          const EMAILJS_TEMPLATE = 'template_djhcrkr';
-          const EMAILJS_PUBLIC_KEY = 'sW6xyFcoaPmem-1k6';
-          emailjs.init(EMAILJS_PUBLIC_KEY);
+    // Mostrar estado de carga mientras verificamos con el servidor
+    checkoutPage.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+        <h2 style="color:var(--gold);margin-bottom:12px;">Verificando pago...</h2>
+        <p style="color:var(--light);">Estamos confirmando tu pago con Mercado Pago.</p>
+      </div>
+    `;
+
+    // Verificar el pago del lado del servidor (no confiar en parámetros de URL)
+    if (orderId) {
+      fetch('/verify-payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'approved') {
+          // Enviar email de notificación desde el servidor
           const savedEmailData = localStorage.getItem('mp_pending_email');
           if (savedEmailData) {
-            const emailParams = JSON.parse(savedEmailData);
-            emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, emailParams);
+            fetch('/send-email.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: savedEmailData
+            }).catch(() => {});
             localStorage.removeItem('mp_pending_email');
           }
-        } catch (e) { console.warn('EmailJS error:', e); }
-      }
-      // Update order status in Firebase
-      if (orderId) {
-        try {
-          db.collection('orders').doc(orderId).update({
-            status: 'paid',
-            paidAt: firebase.firestore.FieldValue.serverTimestamp(),
-            paymentGateway: 'mercadopago'
-          });
-        } catch (e) { console.warn('Could not update order:', e); }
-      }
+          checkoutPage.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;">
+              <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+              <h2 style="color:var(--gold);margin-bottom:12px;">¡Pago confirmado!</h2>
+              <p style="color:var(--light);margin-bottom:8px;">Tu pago fue procesado correctamente por Mercado Pago.</p>
+              <p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>
+              <p style="color:var(--light);margin-bottom:24px;">Podés coordinar el envío por WhatsApp.</p>
+              <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <a href="https://wa.me/5491132053335?text=${encodeURIComponent('Hola! Acabo de pagar mi pedido #' + orderId + ' por Mercado Pago. Quiero coordinar el envío.')}" 
+                   class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">
+                  Coordinar envío por WhatsApp
+                </a>
+                <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
+              </div>
+            </div>
+          `;
+        } else if (data.status === 'pending' || data.status === 'in_process') {
+          checkoutPage.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;">
+              <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+              <h2 style="color:var(--gold);margin-bottom:12px;">Pago pendiente</h2>
+              <p style="color:var(--light);margin-bottom:8px;">Tu pago está siendo procesado. Te notificaremos cuando se confirme.</p>
+              <p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>
+              <p style="color:var(--light);margin-bottom:24px;">Si pagaste con Rapipago o Pago Fácil, puede demorar algunas horas.</p>
+              <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
+            </div>
+          `;
+        } else {
+          checkoutPage.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;">
+              <div style="font-size:3rem;margin-bottom:16px;">❌</div>
+              <h2 style="color:#e74c3c;margin-bottom:12px;">El pago no se pudo procesar</h2>
+              <p style="color:var(--light);margin-bottom:24px;">Hubo un problema con tu pago. Podés intentar de nuevo o elegir otro método de pago.</p>
+              <a href="checkout.html" class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">Intentar de nuevo</a>
+            </div>
+          `;
+        }
+      })
+      .catch(() => {
+        // Si falla la verificación, mostrar mensaje genérico sin marcar como pagado
+        checkoutPage.innerHTML = `
+          <div style="text-align:center;padding:60px 20px;">
+            <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
+            <h2 style="color:var(--gold);margin-bottom:12px;">Pago en proceso</h2>
+            <p style="color:var(--light);margin-bottom:8px;">Tu pago está siendo verificado.</p>
+            <p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>
+            <p style="color:var(--light);margin-bottom:24px;">Si ya pagaste, contactanos por WhatsApp para confirmar.</p>
+            <a href="https://wa.me/5491132053335?text=${encodeURIComponent('Hola! Quiero verificar el estado de mi pedido #' + orderId)}" 
+               class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">Consultar por WhatsApp</a>
+          </div>
+        `;
+      });
     } else if (isFailure) {
       checkoutPage.innerHTML = `
         <div style="text-align:center;padding:60px 20px;">
@@ -543,32 +653,12 @@
           <a href="checkout.html" class="btn-pay enabled" style="display:inline-block;text-decoration:none;padding:12px 28px;">Intentar de nuevo</a>
         </div>
       `;
-    } else if (isPending) {
-      checkoutPage.innerHTML = `
-        <div style="text-align:center;padding:60px 20px;">
-          <div style="font-size:3rem;margin-bottom:16px;">⏳</div>
-          <h2 style="color:var(--gold);margin-bottom:12px;">Pago pendiente</h2>
-          <p style="color:var(--light);margin-bottom:8px;">Tu pago está siendo procesado. Te notificaremos cuando se confirme.</p>
-          ${orderId ? `<p style="color:var(--gray);font-size:0.85rem;margin-bottom:20px;">Orden: <strong>${orderId}</strong></p>` : ''}
-          <p style="color:var(--light);margin-bottom:24px;">Si pagaste con Rapipago o Pago Fácil, puede demorar algunas horas.</p>
-          <a href="index.html" style="color:var(--gold);text-decoration:underline;padding:12px;">Volver al inicio</a>
-        </div>
-      `;
-      if (orderId) {
-        try {
-          db.collection('orders').doc(orderId).update({ status: 'payment_pending' });
-        } catch (e) { /* silent */ }
-      }
     }
   })();
 
   const checkoutItems = document.getElementById('checkoutItems');
   if (checkoutItems) {
     const WSP_NUMBER = '5491132053335';
-    const EMAILJS_SERVICE = 'service_78p0pvo';
-    const EMAILJS_TEMPLATE = 'template_djhcrkr';
-    const EMAILJS_PUBLIC_KEY = 'sW6xyFcoaPmem-1k6';
-    emailjs.init(EMAILJS_PUBLIC_KEY);
 
     let items = Cart.getItems();
     let subtotal = Cart.getTotal();
@@ -878,9 +968,13 @@
 
     function sendEmailNotification(orderId) {
       try {
-        emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, buildEmailParams(orderId));
+        fetch('/send-email.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildEmailParams(orderId))
+        }).catch(() => {});
       } catch (e) {
-        console.warn('EmailJS error:', e);
+        console.warn('Email error:', e);
       }
     }
 
@@ -895,8 +989,36 @@
     }
 
     if (btnPay) {
-      btnPay.addEventListener('click', () => {
+      btnPay.addEventListener('click', async () => {
         if (!validateForm()) return;
+
+        btnPay.textContent = 'Verificando precios...';
+        btnPay.classList.remove('enabled');
+
+        // Validar precios reales desde Firestore para evitar manipulación
+        try {
+          let productIds = [...new Set(items.map(i => i.id))];
+          let realPrices = {};
+          for (let pid of productIds) {
+            let doc = await db.collection('products').doc(pid).get();
+            if (doc.exists) {
+              realPrices[pid] = doc.data().price;
+            }
+          }
+          // Reemplazar precios del carrito con los reales de la BD
+          items.forEach(item => {
+            if (realPrices[item.id] !== undefined) {
+              item.price = realPrices[item.id];
+            }
+          });
+          subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+        } catch (e) {
+          console.warn('No se pudieron validar precios:', e);
+          btnPay.textContent = 'Confirmar pedido';
+          btnPay.classList.add('enabled');
+          Cart.showToast('Error al verificar precios. Intentá de nuevo.');
+          return;
+        }
 
         let promoResult = computePromoBreakdown(currentPayment);
         let effectiveSubtotal = promoResult.effectiveSubtotal;
@@ -952,7 +1074,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                items: items.map(i => ({ name: i.name + ' - Talle ' + i.size, qty: i.qty, price: i.price })),
+                items: items.map(i => ({ id: i.id, name: i.name + ' - Talle ' + i.size, qty: i.qty, price: i.price })),
                 payer: {
                   name: document.getElementById('chkNombre').value.trim(),
                   surname: document.getElementById('chkApellido').value.trim(),

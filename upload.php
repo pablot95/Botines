@@ -2,12 +2,10 @@
 // upload.php — Subida de imágenes de productos al servidor Hostinger
 // Llamado desde admin/admin.js al guardar/editar un producto
 
+session_start();
 require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -20,9 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Verificar token de autenticación
-$token = $_POST['token'] ?? '';
-if ($token !== UPLOAD_TOKEN) {
+// Verificar sesión de admin (establecida por admin-login.php)
+if (empty($_SESSION['admin'])) {
     http_response_code(403);
     echo json_encode(['error' => 'No autorizado']);
     exit;
