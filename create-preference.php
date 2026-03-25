@@ -45,6 +45,7 @@ $productIds = array_filter(array_unique(array_map(function($i) {
 }, $items)));
 
 $realPrices = [];
+$realSizeStocks = []; // { productId => { sizeArg => stock } }
 if (!empty($productIds)) {
     $docPaths = array_map(function($id) {
         $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $id);
@@ -78,9 +79,33 @@ if (!empty($productIds)) {
                     if ($price !== null) {
                         $realPrices[$docId] = (float)$price;
                     }
+                    // Extraer stock por talle del array sizes
+                    $realSizeStocks[$docId] = [];
+                    $sizesField = $entry['found']['fields']['sizes']['arrayValue']['values'] ?? [];
+                    foreach ($sizesField as $sizeEntry) {
+                        $fields = $sizeEntry['mapValue']['fields'] ?? [];
+                        $arg = $fields['arg']['stringValue'] ?? '';
+                        $sStock = (int)($fields['stock']['integerValue'] ?? $fields['stock']['doubleValue'] ?? 0);
+                        if ($arg) {
+                            $realSizeStocks[$docId][$arg] = $sStock;
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+// Verificar stock suficiente por talle antes de crear la preferencia
+foreach ($items as $item) {
+    $itemId = $item['id'] ?? '';
+    $itemSize = $item['size'] ?? '';
+    $qty = (int)($item['qty'] ?? 1);
+    $available = $realSizeStocks[$itemId][$itemSize] ?? 0;
+    if ($available < $qty) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Stock insuficiente para talle ' . $itemSize, 'product_id' => $itemId, 'size' => $itemSize, 'available' => $available, 'needed' => $qty]);
+        exit;
     }
 }
 

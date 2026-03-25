@@ -22,9 +22,17 @@ const Cart = {
 
   addItem(product) {
     let items = this.getItems();
+    let sizeStock = product.sizeStock || 0;
+    // Verificar stock de este talle específico
     let existing = items.find(i => i.id === product.id && i.size === product.size);
+    let currentQty = existing ? existing.qty : 0;
+    if (sizeStock > 0 && currentQty >= sizeStock) {
+      this.showToast('No hay más stock de este talle');
+      return;
+    }
     if (existing) {
       existing.qty += 1;
+      if (sizeStock > 0) existing.sizeStock = sizeStock;
     } else {
       items.push({
         id: product.id,
@@ -34,6 +42,7 @@ const Cart = {
         size: product.size,
         image: product.image,
         productCode: product.productCode || null,
+        sizeStock: sizeStock || 0,
         qty: 1
       });
     }
@@ -50,8 +59,14 @@ const Cart = {
     let items = this.getItems();
     let item = items.find(i => i.id === id && i.size === size);
     if (item) {
-      item.qty += delta;
-      if (item.qty < 1) item.qty = 1;
+      let newQty = item.qty + delta;
+      if (newQty < 1) newQty = 1;
+      // Verificar stock de este talle específico
+      if (delta > 0 && item.sizeStock > 0 && newQty > item.sizeStock) {
+        this.showToast('No hay más stock de este talle');
+        return;
+      }
+      item.qty = newQty;
     }
     this.saveItems(items);
   },

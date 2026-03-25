@@ -440,22 +440,41 @@
         ];
         let allSizes = product.category === 'kids' ? KIDS_SIZES_PRODUCT : ADULT_SIZES;
 
-        let productSizeArgs = (product.sizes || []).map(s => String(s.arg || s));
+        let productSizes = product.sizes || [];
+        let productSizeArgs = productSizes.map(s => String(s.arg || s));
         let selectedSize = null;
+        let selectedSizeStock = 0;
+
+        // Mapa de stock por talle
+        let sizeStockMap = {};
+        productSizes.forEach(s => {
+          sizeStockMap[String(s.arg || s)] = s.stock || 0;
+        });
 
         allSizes.forEach(size => {
           let btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'size-btn';
+          let sizeArg = size.arg;
+          let sizeArgAlt = size.arg.replace('½', '.5');
+          let isAvailable = productSizeArgs.includes(sizeArg) || productSizeArgs.includes(sizeArgAlt);
+          let thisSizeStock = sizeStockMap[sizeArg] || sizeStockMap[sizeArgAlt] || 0;
+          let isOutOfStock = isAvailable && thisSizeStock <= 0;
+
           btn.innerHTML = `${size.arg}<br><small class="size-btn-us">US ${size.us}</small>`;
-          let isAvailable = productSizeArgs.includes(size.arg) || productSizeArgs.includes(size.arg.replace('½', '.5'));
+
           if (!isAvailable && productSizeArgs.length > 0) {
+            btn.classList.add('unavailable');
+          } else if (isOutOfStock) {
             btn.classList.add('unavailable');
           } else {
             btn.addEventListener('click', () => {
               sizeOptions.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
               btn.classList.add('selected');
-              selectedSize = size.arg;
+              selectedSize = sizeArg;
+              selectedSizeStock = thisSizeStock;
+              selectedQty = 1;
+              updateQtyUI();
             });
           }
           sizeOptions.appendChild(btn);
@@ -463,6 +482,48 @@
 
         let btnAddCart = document.getElementById('btnAddCart');
         let btnBuyNow = document.getElementById('btnBuyNow');
+        let qtyValue = document.getElementById('qtyValue');
+        let qtyMinus = document.getElementById('qtyMinus');
+        let qtyPlus = document.getElementById('qtyPlus');
+        let selectedQty = 1;
+
+        function getCartQtyForSize() {
+          if (!selectedSize) return 0;
+          return Cart.getItems().filter(i => i.id === product.id && i.size === selectedSize).reduce((s, i) => s + i.qty, 0);
+        }
+
+        function getMaxAllowed() {
+          return Math.max(0, selectedSizeStock - getCartQtyForSize());
+        }
+
+        function updateQtyUI() {
+          let maxAllowed = getMaxAllowed();
+          if (selectedQty > maxAllowed && maxAllowed > 0) selectedQty = maxAllowed;
+          if (selectedQty < 1) selectedQty = 1;
+          if (qtyValue) qtyValue.textContent = selectedQty;
+          if (qtyMinus) qtyMinus.disabled = selectedQty <= 1;
+          if (qtyPlus) qtyPlus.disabled = selectedSizeStock <= 0 || selectedQty >= maxAllowed;
+        }
+
+        if (qtyMinus) {
+          qtyMinus.addEventListener('click', () => {
+            if (selectedQty > 1) { selectedQty--; updateQtyUI(); }
+          });
+        }
+        if (qtyPlus) {
+          qtyPlus.addEventListener('click', () => {
+            if (selectedSizeStock <= 0) return;
+            let maxAllowed = getMaxAllowed();
+            if (selectedQty < maxAllowed) { selectedQty++; updateQtyUI(); }
+            else { Cart.showToast('No hay más stock de este talle'); }
+          });
+        }
+        updateQtyUI();
+
+        if (productStock <= 0) {
+          let qtySel = document.getElementById('qtySelector');
+          if (qtySel) qtySel.style.display = 'none';
+        }
 
         if (btnAddCart) {
           if (productStock <= 0) {
@@ -475,19 +536,30 @@
               Cart.showToast('Seleccioná un talle');
               return;
             }
-            if (productStock <= 0) {
-              Cart.showToast('Producto agotado');
+            if (selectedSizeStock <= 0) {
+              Cart.showToast('Talle agotado');
               return;
             }
-            Cart.addItem({
-              id: product.id,
-              name: product.name,
-              category: product.category,
-              price: product.price,
-              size: selectedSize,
-              image: (product.images && product.images[0]) || 'images/logo.jpeg',
-              productCode: product.productCode || null
-            });
+            let maxAllowed = getMaxAllowed();
+            if (maxAllowed <= 0) {
+              Cart.showToast('Ya tenés el máximo de este talle en el carrito');
+              return;
+            }
+            let qtyToAdd = Math.min(selectedQty, maxAllowed);
+            for (let i = 0; i < qtyToAdd; i++) {
+              Cart.addItem({
+                id: product.id,
+                name: product.name,
+                category: product.category,
+                price: product.price,
+                size: selectedSize,
+                image: (product.images && product.images[0]) || 'images/logo.jpeg',
+                productCode: product.productCode || null,
+                sizeStock: selectedSizeStock
+              });
+            }
+            selectedQty = 1;
+            updateQtyUI();
           });
         }
 
@@ -502,19 +574,28 @@
               Cart.showToast('Seleccioná un talle');
               return;
             }
-            if (productStock <= 0) {
-              Cart.showToast('Producto agotado');
+            if (selectedSizeStock <= 0) {
+              Cart.showToast('Talle agotado');
               return;
             }
-            Cart.addItem({
-              id: product.id,
-              name: product.name,
-              category: product.category,
-              price: product.price,
-              size: selectedSize,
-              image: (product.images && product.images[0]) || 'images/logo.jpeg',
-              productCode: product.productCode || null
-            });
+            let maxAllowed = getMaxAllowed();
+            if (maxAllowed <= 0) {
+              Cart.showToast('Ya tenés el máximo de este talle en el carrito');
+              return;
+            }
+            let qtyToAdd = Math.min(selectedQty, maxAllowed);
+            for (let i = 0; i < qtyToAdd; i++) {
+              Cart.addItem({
+                id: product.id,
+                name: product.name,
+                category: product.category,
+                price: product.price,
+                size: selectedSize,
+                image: (product.images && product.images[0]) || 'images/logo.jpeg',
+                productCode: product.productCode || null,
+                sizeStock: selectedSizeStock
+              });
+            }
             window.location.href = 'checkout.html';
           });
         }
@@ -695,42 +776,57 @@
     function computePromoBreakdown(paymentMethod) {
       const isEfectivo = paymentMethod === 'efectivo' || paymentMethod === 'transferencia';
 
-      if (!isEfectivo) {
-        return { effectiveSubtotal: subtotal, savings: 0 };
-      }
-
-      // Contar unidades por tipo
+      // Contar unidades y precio unitario promedio por tipo
       let f11 = 0, f5 = 0;
+      let f11Total = 0, f5Total = 0;
       items.forEach(item => {
         let qty = item.qty || 1;
-        if (item.category === 'f11' || item.category === 'mixtos') f11 += qty;
-        else f5 += qty;
+        if (item.category === 'f11' || item.category === 'mixtos') {
+          f11 += qty;
+          f11Total += item.price * qty;
+        } else {
+          f5 += qty;
+          f5Total += item.price * qty;
+        }
       });
 
-      // --- Promo por par (2 del mismo tipo) ---
-      let totalPar = 0;
+      let f11Unit = f11 > 0 ? f11Total / f11 : 0;
+      let f5Unit = f5 > 0 ? f5Total / f5 : 0;
+
+      // --- Estrategia 1: Promos combo (aplican SIEMPRE) ---
+      let totalCombo = 0;
+
+      // Pares F11
       let f11Pairs = Math.floor(f11 / 2);
-      let f5Pairs  = Math.floor(f5  / 2);
-      totalPar += f11Pairs * 230000 + f5Pairs * 180000;
+      totalCombo += f11Pairs * 230000;
       let remF11 = f11 - f11Pairs * 2;
-      let remF5  = f5  - f5Pairs  * 2;
-      let mixed  = Math.min(remF11, remF5);
-      totalPar += mixed * 220000;
-      remF11 -= mixed; remF5 -= mixed;
-      totalPar += remF11 * 131250 + remF5 * 101250;
 
-      // --- Promo 4 al precio de 3 (mismo tipo, precio unitario efectivo) ---
-      let total4x3 = 0;
-      let f11Groups = Math.floor(f11 / 4);
-      let f5Groups  = Math.floor(f5  / 4);
-      total4x3 += f11Groups * 3 * 131250 + f5Groups * 3 * 101250;
-      let remF11b = f11 - f11Groups * 4;
-      let remF5b  = f5  - f5Groups  * 4;
-      total4x3 += remF11b * 131250 + remF5b * 101250;
+      // Pares F5/Futsal
+      let f5Pairs = Math.floor(f5 / 2);
+      totalCombo += f5Pairs * 180000;
+      let remF5 = f5 - f5Pairs * 2;
 
-      // Aplicar el que da más ahorro
-      let best = Math.min(totalPar, total4x3);
-      return { effectiveSubtotal: best, savings: subtotal - best };
+      // Combo mixto (1 F11 + 1 F5)
+      let mixed = Math.min(remF11, remF5);
+      totalCombo += mixed * 220000;
+      remF11 -= mixed;
+      remF5 -= mixed;
+
+      // Sueltos: con 25% OFF si es efectivo/transferencia, sino precio normal
+      if (isEfectivo) {
+        totalCombo += remF11 * f11Unit * 0.75;
+        totalCombo += remF5 * f5Unit * 0.75;
+      } else {
+        totalCombo += remF11 * f11Unit;
+        totalCombo += remF5 * f5Unit;
+      }
+
+      // --- Estrategia 2: 25% OFF directo en todo (solo efectivo/transf) ---
+      let total25 = isEfectivo ? subtotal * 0.75 : subtotal;
+
+      // Tomar la mejor opción para el cliente
+      let best = Math.round(Math.min(totalCombo, total25));
+      return { effectiveSubtotal: best, savings: Math.round(subtotal - best) };
     }
 
     if (chkSubtotal) chkSubtotal.textContent = Cart.formatPrice(subtotal);
@@ -738,9 +834,14 @@
     function updateTotals() {
       let promo = computePromoBreakdown(currentPayment);
       let total = promo.effectiveSubtotal + currentShipping;
+      let discountLabel = document.getElementById('discountLabel');
       if (promo.savings > 0) {
         if (chkDiscount) chkDiscount.textContent = '− ' + Cart.formatPrice(promo.savings);
         if (chkDiscountLine) chkDiscountLine.style.display = '';
+        if (discountLabel) {
+          let isEf = currentPayment === 'efectivo' || currentPayment === 'transferencia';
+          discountLabel.textContent = isEf ? 'Promo + desc. ef./transf. 🎉' : 'Promo combo 🎉';
+        }
       } else {
         if (chkDiscountLine) chkDiscountLine.style.display = 'none';
       }
@@ -763,6 +864,9 @@
       }
       updateTotals();
     }
+
+    // Calcular totales con promo al cargar la página
+    updateTotals();
 
     // Auto-detect zone from CP
     function detectZonaFromCP(cp) {
@@ -992,19 +1096,39 @@
       btnPay.addEventListener('click', async () => {
         if (!validateForm()) return;
 
-        btnPay.textContent = 'Verificando precios...';
+        btnPay.textContent = 'Verificando stock...';
         btnPay.classList.remove('enabled');
 
-        // Validar precios reales desde Firestore para evitar manipulación
+        // Verificar stock y precios reales desde Firestore
         try {
           let productIds = [...new Set(items.map(i => i.id))];
           let realPrices = {};
+          let realSizeStocks = {}; // { productId: { sizeArg: stock } }
           for (let pid of productIds) {
             let doc = await db.collection('products').doc(pid).get();
             if (doc.exists) {
-              realPrices[pid] = doc.data().price;
+              let data = doc.data();
+              realPrices[pid] = data.price;
+              realSizeStocks[pid] = {};
+              (data.sizes || []).forEach(s => {
+                realSizeStocks[pid][String(s.arg || s)] = s.stock || 0;
+              });
             }
           }
+
+          // Verificar stock suficiente por talle
+          for (let item of items) {
+            let sizeStocks = realSizeStocks[item.id] || {};
+            let available = sizeStocks[item.size] || 0;
+            if (available < item.qty) {
+              let itemName = item.name || 'Producto';
+              btnPay.textContent = 'Confirmar pedido';
+              btnPay.classList.add('enabled');
+              Cart.showToast(`Sin stock de "${itemName}" talle ${item.size} (disponible: ${available})`);
+              return;
+            }
+          }
+
           // Reemplazar precios del carrito con los reales de la BD
           items.forEach(item => {
             if (realPrices[item.id] !== undefined) {
@@ -1013,10 +1137,10 @@
           });
           subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
         } catch (e) {
-          console.warn('No se pudieron validar precios:', e);
+          console.warn('No se pudieron validar precios/stock:', e);
           btnPay.textContent = 'Confirmar pedido';
           btnPay.classList.add('enabled');
-          Cart.showToast('Error al verificar precios. Intentá de nuevo.');
+          Cart.showToast('Error al verificar stock. Intentá de nuevo.');
           return;
         }
 
@@ -1066,7 +1190,36 @@
         btnPay.textContent = 'Procesando...';
         btnPay.classList.remove('enabled');
 
-        db.collection('orders').add(orderData).then(docRef => {
+        db.collection('orders').add(orderData).then(async docRef => {
+          // Decrementar stock por talle en Firestore
+          try {
+            // Agrupar qty por producto+talle
+            let qtyByProductSize = {};
+            items.forEach(item => {
+              let key = item.id;
+              if (!qtyByProductSize[key]) qtyByProductSize[key] = {};
+              qtyByProductSize[key][item.size] = (qtyByProductSize[key][item.size] || 0) + item.qty;
+            });
+            for (let pid in qtyByProductSize) {
+              let prodDoc = await db.collection('products').doc(pid).get();
+              if (prodDoc.exists) {
+                let data = prodDoc.data();
+                let sizes = data.sizes || [];
+                let totalStock = 0;
+                sizes.forEach(s => {
+                  let sizeArg = String(s.arg || s);
+                  if (qtyByProductSize[pid][sizeArg]) {
+                    s.stock = Math.max(0, (s.stock || 0) - qtyByProductSize[pid][sizeArg]);
+                  }
+                  totalStock += (s.stock || 0);
+                });
+                await db.collection('products').doc(pid).update({ sizes: sizes, stock: totalStock });
+              }
+            }
+          } catch (e) {
+            console.warn('Error al actualizar stock:', e);
+          }
+
           if (currentPayment === 'mercadopago') {
             // Crear preferencia de pago en MercadoPago via serverless function
             const baseUrl = window.location.origin;
@@ -1074,7 +1227,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                items: items.map(i => ({ id: i.id, name: i.name + ' - Talle ' + i.size, qty: i.qty, price: i.price })),
+                items: items.map(i => ({ id: i.id, name: i.name + ' - Talle ' + i.size, size: i.size, qty: i.qty, price: i.price })),
                 payer: {
                   name: document.getElementById('chkNombre').value.trim(),
                   surname: document.getElementById('chkApellido').value.trim(),
@@ -1109,7 +1262,12 @@
               console.error('MP error:', err);
               btnPay.textContent = 'Confirmar y pagar';
               btnPay.classList.add('enabled');
-              Cart.showToast('Error de Mercado Pago: ' + err.message);
+              let msg = err.message || '';
+              if (msg.includes('Stock insuficiente') || msg.includes('stock')) {
+                Cart.showToast('Stock insuficiente. Revisá tu carrito.');
+              } else {
+                Cart.showToast('Error de Mercado Pago: ' + msg);
+              }
             });
           } else {
             sendEmailNotification(docRef.id);
